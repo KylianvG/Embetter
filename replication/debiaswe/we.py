@@ -157,6 +157,7 @@ class WordEmbedding:
         print("Median:", np.median(nums)-1)
         rows, cols, vecs = zip(*[(i, j, vecs[i]-vecs[j]) for i, j, x in zip(rows, cols, dots.data) if i<j])
         self._neighbors = rows, cols, np.array([v/np.linalg.norm(v) for v in vecs])
+        print(self._neighbors[2].shape)
 
     def neighbors(self, word, thresh=1):
         dots = self.vecs.dot(self.v(word))
