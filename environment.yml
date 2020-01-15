@@ -15,3 +15,4 @@ dependencies:
   - pip:
     - sentencepiece==0.1.85
     - PrettyTable==0.7.2
+    - gensim==3.8.1
