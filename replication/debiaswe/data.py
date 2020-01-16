@@ -2,7 +2,8 @@ import json
 import os
 
 """
-Tools for data operations
+Tools for data operations.
+Extended from the code from:
 
 Man is to Computer Programmer as Woman is to Homemaker? Debiasing Word Embeddings
 Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai
@@ -12,6 +13,12 @@ PKG_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def load_professions():
+    """
+    Loads professions from data file
+
+
+    :returns: List of perfessions
+    """
     professions_file = os.path.join(PKG_DIR, '../data', 'professions.json')
     with open(professions_file, 'r') as f:
         professions = json.load(f)
@@ -25,6 +32,12 @@ def load_professions():
 
 # ZELF TOEGEVOEGD
 def load_gender_seed():
+    """
+    Loads gender seed words from data file
+
+
+    :returns: List of gender-specific words
+    """
     gender_file = os.path.join(PKG_DIR, '../data', 'gender_specific_seed.json')
     with open(gender_file, 'r') as f:
         gender_words = json.load(f)

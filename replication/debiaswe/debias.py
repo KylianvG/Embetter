@@ -8,7 +8,8 @@ if sys.version_info[0] < 3:
     import io
     open = io.open
 """
-Hard-debias embedding
+Hard-debias and soft-debias for word embeddings.
+Extended from the code from:
 
 Man is to Computer Programmer as Woman is to Homemaker? Debiasing Word Embeddings
 Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai
@@ -17,6 +18,19 @@ Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai
 
 
 def debias(E, gender_specific_words, definitional, equalize):
+    """
+    Debiases word embeddings.
+
+
+    :param object E: WordEmbedding object.
+    :param list gender_specific_words: List of gender specific words, which are
+        not dibiased.
+    :param list definitional: List containing lists of corresponding
+        definitional words.
+    :param list equalize: List containing lists of corresponding words that
+        should only differ in gender.
+    :returns: None
+    """
     gender_direction = we.doPCA(definitional, E).components_[0]
     specific_set = set(gender_specific_words)
     for i, w in enumerate(E.words):
