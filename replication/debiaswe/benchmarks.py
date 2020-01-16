@@ -2,7 +2,31 @@ import os
 import numpy as np
 from collections import defaultdict
 from scipy import linalg, mat, dot, stats
+import argparse
+import debiaswe.we as we
 DATA_ROOT = os.path.dirname( os.path.abspath( __file__ ) ) + "/benchmark_data/"
+
+"""
+Tools for benchmarking word embeddings.
+
+Code adapted and extended from:
+https://github.com/k-kawakami/embedding-evaluation
+
+Using well-known benchmarks from:
+(MSR)
+    T. Mikolov, W.-t. Yih, and G. Zweig.
+    Linguistic regularities in continuous space word representations.
+    2013.
+(RG)
+    H. Rubenstein and J. B. Goodenough.
+    Contextual correlates of synonymy.
+    1965.
+(WS)
+    L. Finkelstein, E. Gabrilovich, Y. Matias, E. Rivlin, Z. Solan,
+        G. Wolfman, and E. Ruppin.
+    Placing search in context: The concept revisited.
+    2001.
+"""
 
 class Benchmark:
     def __init__(self):
@@ -36,10 +60,11 @@ class Benchmark:
     def pprint_compare(results, methods, title):
         assert len(results) == len(methods)
         from prettytable import PrettyTable
-        table = PrettyTable(["Score", "EN-RG-65", "EN-WS-353-ALL", "MSR-analogy"])
+        table = PrettyTable(["Score", "EN-RG-65", "EN-WS-353-ALL",
+            "MSR-analogy"])
         table.title = 'Results for {} dataset'.format(title)
         for result, method in zip(results, methods):
-            table.add_row([method, list(result.values())[1][2], 
+            table.add_row([method, list(result.values())[1][2],
                 list(result.values())[0][2], list(result.values())[2][2]])
         print(table)
 
@@ -125,3 +150,30 @@ class Benchmark:
         words_not_found = len(analogy_answers) - len(filtered_answers)
 
         return accuracy, len(filtered_answers), words_not_found
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("embedding_filename", help="The name of the embedding")
+    parser.add_argument("table_title", type=str, default="benchmark",
+        help="Title of the printed table")
+
+    print_parser = parser.add_mutually_exclusive_group(required=False)
+    print_parser.add_argument('--print', dest='print_t', action='store_true')
+    print_parser.add_argument('--dont-print', dest='print_t', action='store_false')
+    parser.set_defaults(print_t=True)
+
+    query_parser = parser.add_mutually_exclusive_group(required=False)
+    query_parser.add_argument('--discard-query-words', dest='dqw', action='store_true')
+    query_parser.add_argument('--dont-discard', dest='dqw', action='store_false')
+    parser.set_defaults(dqw=False)
+
+    args = parser.parse_args()
+    print(args)
+
+    E = we.WordEmbedding(args.embedding_filename)
+    B = Benchmark()
+
+    results = B.evaluate(E, args.table_title, args.dqw, args.print_t)
+    if not args.print_t:
+        print(results)
