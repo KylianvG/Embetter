@@ -69,10 +69,7 @@ class WordEmbedding:
     #                 v /= np.linalg.norm(v)
                     words.append(s[0])
                     vecs.append(v)
-        if fname.endswith(".bin"):
-            self.vecs = np.array(vecs, dtype='float16')
-        else:
-            self.vecs = np.array(vecs, dtype='float32')
+        self.vecs = np.array(vecs, dtype='float32')
         print(self.vecs.shape)
         self.words = words
         self.reindex()
