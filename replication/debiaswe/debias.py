@@ -4,6 +4,7 @@ import json
 import numpy as np
 import argparse
 import sys
+import torch
 if sys.version_info[0] < 3:
     import io
     open = io.open
@@ -17,9 +18,9 @@ Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai
 """
 
 
-def debias(E, gender_specific_words, definitional, equalize):
+def hard_debias(E, gender_specific_words, definitional, equalize):
     """
-    Debiases word embeddings.
+    Hard debiases word embeddings.
 
 
     :param object E: WordEmbedding object.
@@ -50,6 +51,62 @@ def debias(E, gender_specific_words, definitional, equalize):
             E.vecs[E.index[a]] = z * gender_direction + y
             E.vecs[E.index[b]] = -z * gender_direction + y
     E.normalize()
+
+def soft_debias(E, gender_specific_words, definitional, log=True):
+    """
+    Soft debiases word embeddings.
+
+
+    :param object E: WordEmbedding object.
+    :param list gender_specific_words: List of gender specific words, which are
+        not dibiased.
+    :param list definitional: List containing lists of corresponding
+        definitional words.
+    :param bool log: Print optimizer progress.
+    :returns: None
+    """
+    W = torch.from_numpy(E.vecs).t()
+    neutrals = list(set(E.words) - set(gender_specific_words))
+    neutrals = torch.tensor([E.vecs[E.index[w]] for w in neutrals]).t()
+    gender_direction = torch.tensor([we.doPCA(definitional, E).components_[0]]).t()
+    l = 0.2 # lambda
+    u, s, _ = torch.svd(W)
+    s = torch.diag(s)
+
+    # precompute
+    t1 = s.mm(u.t())
+    t2 = u.mm(s)
+
+    transform = torch.randn(300, 300, requires_grad=True)
+    epochs = 2000
+    optimizer = torch.optim.Adam([transform], lr=0.01)
+    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[1000,1500,1800], gamma=0.1)
+    best = (None, float("inf")) # (best transform, lowest loss)
+
+    for i in range(epochs):
+        optimizer.zero_grad()
+        TtT = torch.mm(transform.t(), transform)
+        norm1 = (t1.mm(TtT - torch.eye(300)).mm(t2)).norm(p="fro")
+        norm2 = (neutrals.t().mm(TtT).mm(gender_direction)).norm(p="fro")
+        loss = norm1 + l * norm2
+        if loss.item() < best[1]:
+            best = (transform, loss.item())
+
+        loss.backward()
+        optimizer.step()
+        scheduler.step()
+        
+        if i % 10 == 0:
+            if log:
+                print("Loss @ Epoch #" + str(i) + ":", loss.item())
+            
+    transform = best[0].detach()
+    if log:
+        print(f"Lowest loss: {best[1]}")
+
+    debiased_embeds = transform.mm(W).t().numpy()
+    debiased_embeds = debiased_embeds / np.linalg.norm(debiased_embeds, axis=1)[:, None]
+    E.vecs = debiased_embeds
 
 
 if __name__ == "__main__":
