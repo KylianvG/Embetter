@@ -34,11 +34,13 @@ def dedup(seq):
 def safe_word(w):
     # ignore words with numbers, etc.
     # [a-zA-Z\.'_\- :;\(\)\]] for emoticons
-    return (re.match(r"^[a-z_]*$", w) and len(w) < 20 and not re.match(r"^_*$", w))
+    return (re.match(r"^[a-z_]*$", w) and len(w) < 20
+        and not re.match(r"^_*$", w))
 
 
 def to_utf8(text, errors='strict', encoding='utf8'):
-    """Convert a string (unicode or bytestring in `encoding`), to bytestring in utf8."""
+    """Convert a string (unicode or bytestring in `encoding`),
+        to bytestring in utf8."""
     if isinstance(text, unicode):
         return text.encode('utf8')
     # do bytestring -> unicode -> utf8 full circle, to ensure valid utf8
