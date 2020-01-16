@@ -21,3 +21,11 @@ def load_professions():
           'definitional female -1.0 -> definitional male 1.0\n' +
           'stereotypical female -1.0 -> stereotypical male 1.0')
     return professions
+
+
+# ZELF TOEGEVOEGD
+def load_gender_seed():
+    gender_file = os.path.join(PKG_DIR, '../data', 'gender_specific_seed.json')
+    with open(gender_file, 'r') as f:
+        gender_words = json.load(f)
+    return gender_words
