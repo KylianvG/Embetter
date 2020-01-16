@@ -69,13 +69,19 @@ class WordEmbedding:
     #                 v /= np.linalg.norm(v)
                     words.append(s[0])
                     vecs.append(v)
-        self.vecs = np.array(vecs, dtype='float32')
+        if fname.endswith(".bin"):
+            self.vecs = np.array(vecs, dtype='float16')
+        else:
+            self.vecs = np.array(vecs, dtype='float32')
         print(self.vecs.shape)
         self.words = words
         self.reindex()
         norms = np.linalg.norm(self.vecs, axis=1)
         if max(norms)-min(norms) > 0.0001:
             self.normalize()
+
+    def get_dict(self):
+        return {key:value for key, value in zip(self.words, self.vecs)}
 
     def reindex(self):
         self.index = {w: i for i, w in enumerate(self.words)}
