@@ -10,7 +10,8 @@ if sys.version_info[0] < 3:
 else:
     unicode = str
 """
-Tools for debiasing word embeddings
+Tools for debiasing word embeddings.
+Extended from the code from:
 
 Man is to Computer Programmer as Woman is to Homemaker? Debiasing Word Embeddings
 Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai
@@ -52,8 +53,10 @@ class WordEmbedding:
         print("*** Reading data from " + fname)
         if fname.endswith(".bin"):
             import gensim.models
-            model =gensim.models.KeyedVectors.load_word2vec_format(fname, binary=True)
-            words = sorted([w for w in model.vocab], key=lambda w: model.vocab[w].index)
+            model = gensim.models.KeyedVectors.load_word2vec_format(fname,
+                binary=True)
+            words = sorted([w for w in model.vocab],
+                key=lambda w: model.vocab[w].index)
             vecs = [model[w] for w in words]
         else:
             vecs = []
@@ -88,7 +91,8 @@ class WordEmbedding:
         self.n, self.d = self.vecs.shape
         assert self.n == len(self.words) == len(self.index)
         self._neighbors = None
-        print(self.n, "words of dimension", self.d, ":", ", ".join(self.words[:4] + ["..."] + self.words[-4:]))
+        print(self.n, "words of dimension", self.d, ":", ", ".join(
+            self.words[:4] + ["..."] + self.words[-4:]))
 
     def v(self, word):
         return self.vecs[self.index[word]]
@@ -111,14 +115,16 @@ class WordEmbedding:
         Keep some words based on test, e.g. lambda x: x.lower()==x
         """
         self.desc += ", filter"
-        kept_indices, words = zip(*[[i, w] for i, w in enumerate(self.words) if test(w)])
+        kept_indices, words = zip(*[[i, w] for i, w
+            in enumerate(self.words) if test(w)])
         self.words = list(words)
         self.vecs = self.vecs[kept_indices, :]
         self.reindex()
 
     def save(self, filename):
         with open(filename, "w") as f:
-            f.write("\n".join([w+" " + " ".join([str(x) for x in v]) for w, v in zip(self.words, self.vecs)]))
+            f.write("\n".join([w+" " + " ".join([str(x) for x in v]) for w, v
+                in zip(self.words, self.vecs)]))
         print("Wrote", self.n, "words to", filename)
 
     def save_w2v(self, filename, binary=True):
@@ -130,7 +136,8 @@ class WordEmbedding:
                 if binary:
                     fout.write(to_utf8(word) + b" " + row.tostring())
                 else:
-                    fout.write(to_utf8("%s %s\n" % (word, ' '.join("%f" % val for val in row))))
+                    fout.write(to_utf8("%s %s\n" % (word, ' '.join("%f" % val
+                        for val in row))))
 
     def remove_directions(self, directions): #directions better be orthogonal
         self.desc += ", removed"
@@ -143,12 +150,13 @@ class WordEmbedding:
                 w1, w2 = direction
                 v = self.diff(w1, w2)
                 self.desc += w1 + "-" + w2
-            self.vecs = self.vecs - self.vecs.dot(v)[:, np.newaxis].dot(v[np.newaxis, :])
+            self.vecs = self.vecs - self.vecs.dot(v)[:, None].dot(v[None, :])
         self.normalize()
 
     def compute_neighbors_if_necessary(self, thresh, max_words):
         thresh = float(thresh) # dang python 2.7!
-        if self._neighbors is not None and self.thresh == thresh and self.max_words == max_words:
+        if (self._neighbors is not None and self.thresh == thresh
+            and self.max_words == max_words):
             return
         print("Computing neighbors")
         self.thresh = thresh
@@ -161,13 +169,16 @@ class WordEmbedding:
         nums = list(Counter(rows).values())
         print("Mean:", np.mean(nums)-1)
         print("Median:", np.median(nums)-1)
-        rows, cols, vecs = zip(*[(i, j, vecs[i]-vecs[j]) for i, j, x in zip(rows, cols, dots.data) if i<j])
-        self._neighbors = rows, cols, np.array([v/np.linalg.norm(v) for v in vecs])
+        rows, cols, vecs = zip(*[(i, j, vecs[i]-vecs[j]) for i, j, x
+            in zip(rows, cols, dots.data) if i<j])
+        self._neighbors = rows, cols, np.array([v/np.linalg.norm(v)
+            for v in vecs])
         print(self._neighbors[2].shape)
 
     def neighbors(self, word, thresh=1):
         dots = self.vecs.dot(self.v(word))
-        return [self.words[i] for i, dot in enumerate(dots) if dot >= 1-thresh/2]
+        return [self.words[i] for i, dot in enumerate(dots)
+            if dot >= 1-thresh/2]
 
     def more_words_like_these(self, words, topn=50, max_freq=100000):
         v = sum(self.v(w) for w in words)
@@ -176,7 +187,8 @@ class WordEmbedding:
         words = [w for w, dot in zip(self.words, dots) if dot>=thresh]
         return sorted(words, key=lambda w: self.v(w).dot(v))[-topn:][::-1]
 
-    def best_analogies_dist_thresh(self, v, thresh=1, topn=500, max_words=50000):
+    def best_analogies_dist_thresh(self, v, thresh=1, topn=500,
+        max_words=50000):
         """Metric is cos(a-c, b-d) if |b-d|^2 < thresh, otherwise 0
         """
         vecs, vocab = self.vecs[:max_words], self.words[:max_words]
@@ -205,7 +217,8 @@ class WordEmbedding:
 
 
 def viz(analogies):
-    print("\n".join(str(i).rjust(4)+a[0].rjust(29) + " | " + a[1].ljust(29) + (str(a[2]))[:4] for i, a in enumerate(analogies)))
+    print("\n".join(str(i).rjust(4)+a[0].rjust(29) + " | " + a[1].ljust(29) +
+        (str(a[2]))[:4] for i, a in enumerate(analogies)))
 
 
 def text_plot_words(xs, ys, words, width = 90, height = 40, filename=None):
@@ -222,7 +235,8 @@ def text_plot_words(xs, ys, words, width = 90, height = 40, filename=None):
         i = int(x*(width - 1 - PADDING))
         j = int(y*(height-1))
         row = res[j]
-        z = list(row[i2] != ' ' for i2 in range(max(i-1, 0), min(width, i + len(word) + 1)))
+        z = list(row[i2] != ' ' for i2 in range(max(i-1, 0),
+            min(width, i + len(word) + 1)))
         if any(z):
             continue
         for k in range(len(word)):
