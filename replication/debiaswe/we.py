@@ -63,7 +63,8 @@ class WordEmbedding:
                 for line in f:
                     s = line.split()
                     v = np.array([float(x) for x in s[1:]])
-                    if len(vecs) and vecs[-1].shape!=v.shape:
+                    # if len(vecs) and vecs[-1].shape!=v.shape:
+                    if v.shape != (300,):
                         print("Got weird line", line)
                         continue
     #                 v /= np.linalg.norm(v)
