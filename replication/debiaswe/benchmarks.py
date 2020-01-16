@@ -25,7 +25,7 @@ class Benchmark:
     @staticmethod
     def pprint(result, title):
         from prettytable import PrettyTable
-        table = PrettyTable(["Dataset", "Found", "Not Found", "Score (rho)"])
+        table = PrettyTable(["Dataset", "Found", "Not Found", "Score"])
         table.title = 'Results for {}'.format(title)
         table.align["Dataset"] = "l"
         for k, v in result.items():
@@ -36,11 +36,11 @@ class Benchmark:
     def pprint_compare(results, methods, title):
         assert len(results) == len(methods)
         from prettytable import PrettyTable
-        table = PrettyTable(["Score (rho)", "EN-RG-65", "EN-WS-353-ALL"])
+        table = PrettyTable(["Score", "EN-RG-65", "EN-WS-353-ALL", "MSR-analogy"])
         table.title = 'Results for {} dataset'.format(title)
         for result, method in zip(results, methods):
-            table.add_row([method, list(result.values())[0][2],
-                list(result.values())[1][2]])
+            table.add_row([method, list(result.values())[1][2], 
+                list(result.values())[0][2], list(result.values())[2][2]])
         print(table)
 
     def evaluate(self, E, title, discount_query_words=False, print=True):
