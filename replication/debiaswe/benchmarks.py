@@ -3,7 +3,7 @@ import numpy as np
 from collections import defaultdict
 from scipy import linalg, mat, dot, stats
 import argparse
-import debiaswe.we as we
+import debiaswe as we
 DATA_ROOT = os.path.dirname( os.path.abspath( __file__ ) ) + "/benchmark_data/"
 
 """
@@ -68,15 +68,18 @@ class Benchmark:
                 list(result.values())[0][2], list(result.values())[2][2]])
         print(table)
 
-    def evaluate(self, E, title, discount_query_words=False, print=True):
+    def evaluate(self, E, title, discount_query_words=False, batch_size=200,
+        print=True):
         """
         Evaluates RG-65, WS-353 and MSR benchmarks
 
 
         :param object E: WordEmbedding object.
+        :param string title: Title of the results table.
+        :param int batch_size: Size of the batches in which to process
+            the queries.
         :param boolean discount_query_words: Give analogy solutions that appear
             in the query 0 score in MSR benchmark. (Default = False)
-        :param string title: Title of the results table.
         :param boolean print: Print table with results. (Default = True)
         :returns: dict with results
         """
@@ -94,13 +97,13 @@ class Benchmark:
                 else:
                     notfound += 1
             result[file_name] = [found, notfound, self.rho(label,pred)*100]
-        msr_res = self.MSR(E, discount_query_words)
+        msr_res = self.MSR(E, discount_query_words, batch_size)
         result["MSR-analogy"] = [msr_res[1], msr_res[2], msr_res[0]]
         if print:
             self.pprint(result, title)
         return result
 
-    def MSR(self, E, discount_query_words=False):
+    def MSR(self, E, discount_query_words=False, batch_size=200):
         """
         Executes MSR-analogy benchmark on the word embeddings in E
 
@@ -108,6 +111,8 @@ class Benchmark:
         :param object E: WordEmbedding object.
         :param boolean discount_query_words: Give analogy solutions that appear
             in the query 0 score. (Default = False)
+        :param int batch_size: Size of the batches in which to process
+            the queries.
         :returns: Percentage of correct analogies (accuracy),
             number of queries without OOV words,
             number of queries with OOV words
@@ -126,26 +131,35 @@ class Benchmark:
         filtered_answers = analogy_a[present_words]
         filtered_questions = analogy_q[present_words]
 
-        # Extract relevant embeddings from E
-        a = E.vecs[np.vectorize(E.index.__getitem__)(filtered_questions[:,0])]
-        x = E.vecs[np.vectorize(E.index.__getitem__)(filtered_questions[:,1])]
-        b = E.vecs[np.vectorize(E.index.__getitem__)(filtered_questions[:,2])]
-        all_y = E.vecs
+        # Batch the queries up
+        y = []
+        n_batches = len(analogy_answers) // batch_size
+        for i, batch in enumerate(np.array_split(filtered_questions,
+            n_batches)):
+            print("Processing batch", i+1, "of", n_batches)
+            # Extract relevant embeddings from E
+            a = E.vecs[np.vectorize(E.index.__getitem__)(batch[:,0])]
+            x = E.vecs[np.vectorize(E.index.__getitem__)(batch[:,1])]
+            b = E.vecs[np.vectorize(E.index.__getitem__)(batch[:,2])]
+            all_y = E.vecs
 
-        # Calculate scores
-        y_pos = ((1+all_y@x.T)/2)*((1+all_y@b.T)/2)
-        y_neg = (1+all_y@a.T+0.00000001)/2
-        y_scores = y_pos/y_neg
+            # Calculate scores
+            batch_pos = ((1+all_y@x.T)/2)*((1+all_y@b.T)/2)
+            batch_neg = (1+all_y@a.T+0.00000001)/2
+            batch_scores = batch_pos/batch_neg
 
-        # If set, set scores of query words to 0
-        if discount_query_words:
-            query_ind = np.vectorize(E.index.__getitem__)(filtered_questions).T
-            y_scores[query_ind, np.arange(y_scores.shape[1])[None,:]] = 0
+            # If set, set scores of query words to 0
+            if discount_query_words:
+                query_ind = np.vectorize(E.index.__getitem__)(batch).T
+                batch_scores[query_ind, np.arange(
+                    batch_scores.shape[1])[None,:]] = 0
 
-        # Retrieve words with best analogy scores
-        y = np.expand_dims(np.array(E.words)[np.argmax(y_scores, axis=0)], axis=1)
+
+            # Retrieve words with best analogy scores
+            y.append(np.array(E.words)[np.argmax(batch_scores, axis=0)])
 
         # Calculate returnable metrics
+        y = np.hstack(y)[:,None]
         accuracy = np.mean(y==filtered_answers)*100
         words_not_found = len(analogy_answers) - len(filtered_answers)
 
@@ -154,18 +168,22 @@ class Benchmark:
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("embedding_filename", help="The name of the embedding")
-    parser.add_argument("table_title", type=str, default="benchmark",
+    parser.add_argument("--embedding_filename",
+        help="The name of the embedding")
+    parser.add_argument("--table_title", type=str, default="benchmark",
         help="Title of the printed table")
 
     print_parser = parser.add_mutually_exclusive_group(required=False)
     print_parser.add_argument('--print', dest='print_t', action='store_true')
-    print_parser.add_argument('--dont-print', dest='print_t', action='store_false')
+    print_parser.add_argument('--dont-print', dest='print_t',
+        action='store_false')
     parser.set_defaults(print_t=True)
 
     query_parser = parser.add_mutually_exclusive_group(required=False)
-    query_parser.add_argument('--discard-query-words', dest='dqw', action='store_true')
-    query_parser.add_argument('--dont-discard', dest='dqw', action='store_false')
+    query_parser.add_argument('--discard-query-words', dest='dqw',
+        action='store_true')
+    query_parser.add_argument('--dont-discard', dest='dqw',
+        action='store_false')
     parser.set_defaults(dqw=False)
 
     args = parser.parse_args()
