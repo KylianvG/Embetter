@@ -68,15 +68,18 @@ class Benchmark:
                 list(result.values())[0][2], list(result.values())[2][2]])
         print(table)
 
-    def evaluate(self, E, title, discount_query_words=False, print=True):
+    def evaluate(self, E, title, discount_query_words=False, batch_size=200,
+        print=True):
         """
         Evaluates RG-65, WS-353 and MSR benchmarks
 
 
         :param object E: WordEmbedding object.
+        :param string title: Title of the results table.
+        :param int batch_size: Size of the batches in which to process
+            the queries.
         :param boolean discount_query_words: Give analogy solutions that appear
             in the query 0 score in MSR benchmark. (Default = False)
-        :param string title: Title of the results table.
         :param boolean print: Print table with results. (Default = True)
         :returns: dict with results
         """
@@ -94,7 +97,7 @@ class Benchmark:
                 else:
                     notfound += 1
             result[file_name] = [found, notfound, self.rho(label,pred)*100]
-        msr_res = self.MSR(E, discount_query_words)
+        msr_res = self.MSR(E, discount_query_words, batch_size)
         result["MSR-analogy"] = [msr_res[1], msr_res[2], msr_res[0]]
         if print:
             self.pprint(result, title)
