@@ -130,7 +130,7 @@ class Benchmark:
 
         # Batch the queries up
         y = []
-        n_batches = len(analogy_answers) // batch_size
+        n_batches = (len(analogy_answers) // batch_size)+1
         for batch in np.array_split(filtered_questions, n_batches):
             # Extract relevant embeddings from E
             a = E.vecs[np.vectorize(E.index.__getitem__)(batch[:,0])]
