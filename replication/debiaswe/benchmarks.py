@@ -3,7 +3,7 @@ import numpy as np
 from collections import defaultdict
 from scipy import linalg, mat, dot, stats
 import argparse
-import debiaswe.we as we
+import we
 DATA_ROOT = os.path.dirname( os.path.abspath( __file__ ) ) + "/benchmark_data/"
 
 """
@@ -143,7 +143,8 @@ class Benchmark:
             y_scores[query_ind, np.arange(y_scores.shape[1])[None,:]] = 0
 
         # Retrieve words with best analogy scores
-        y = np.expand_dims(np.array(E.words)[np.argmax(y_scores, axis=0)], axis=1)
+        y = np.expand_dims(np.array(E.words)[np.argmax(y_scores, axis=0)],
+            axis=1)
 
         # Calculate returnable metrics
         accuracy = np.mean(y==filtered_answers)*100
@@ -154,18 +155,22 @@ class Benchmark:
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("embedding_filename", help="The name of the embedding")
-    parser.add_argument("table_title", type=str, default="benchmark",
+    parser.add_argument("--embedding_filename",
+        help="The name of the embedding")
+    parser.add_argument("--table_title", type=str, default="benchmark",
         help="Title of the printed table")
 
     print_parser = parser.add_mutually_exclusive_group(required=False)
     print_parser.add_argument('--print', dest='print_t', action='store_true')
-    print_parser.add_argument('--dont-print', dest='print_t', action='store_false')
+    print_parser.add_argument('--dont-print', dest='print_t',
+        action='store_false')
     parser.set_defaults(print_t=True)
 
     query_parser = parser.add_mutually_exclusive_group(required=False)
-    query_parser.add_argument('--discard-query-words', dest='dqw', action='store_true')
-    query_parser.add_argument('--dont-discard', dest='dqw', action='store_false')
+    query_parser.add_argument('--discard-query-words', dest='dqw',
+        action='store_true')
+    query_parser.add_argument('--dont-discard', dest='dqw',
+        action='store_false')
     parser.set_defaults(dqw=False)
 
     args = parser.parse_args()
