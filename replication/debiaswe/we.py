@@ -215,6 +215,17 @@ class WordEmbedding:
 
         return ans
 
+    def profession_stereotypes(self, profession_words, bias_space, print_firstn=20):
+        sp = sorted([(self.v(w).dot(bias_space), w) for w in profession_words if w in self.words])
+        print("Positive".center(38) + "|" + "Negative".center(38))
+        print("-"*77)
+        for i in range(print_firstn):
+            print(str(sp[-(i+1)][0].round(3)).ljust(8) # score negative
+                + sp[-(i+1)][1].rjust(29) + " | "       # profession negative
+                + sp[i][1].ljust(29)                    # score positive
+                + str(sp[i][0].round(3)).rjust(8))     # profession positive
+        return sp
+
 
 def viz(analogies):
     print("\n".join(str(i).rjust(4)+a[0].rjust(29) + " | " + a[1].ljust(29) +
