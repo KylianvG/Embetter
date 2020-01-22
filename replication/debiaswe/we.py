@@ -48,7 +48,7 @@ def to_utf8(text, errors='strict', encoding='utf8'):
 
 
 class WordEmbedding:
-    def __init__(self, fname):
+    def __init__(self, fname, limit=None):
         self.thresh = None
         self.max_words = None
         self.desc = fname
@@ -56,7 +56,7 @@ class WordEmbedding:
         if fname.endswith(".bin"):
             import gensim.models
             model = gensim.models.KeyedVectors.load_word2vec_format(fname,
-                binary=True)
+                binary=True, limit=limit)
             words = sorted([w for w in model.vocab],
                 key=lambda w: model.vocab[w].index)
             vecs = [model[w] for w in words]
@@ -66,6 +66,8 @@ class WordEmbedding:
 
             with open(fname, "r", encoding='utf8') as f:
                 for line in f:
+                    if len(words) == limit:
+                        break
                     s = line.split()
                     v = np.array([float(x) for x in s[1:]])
                     # if len(vecs) and vecs[-1].shape!=v.shape:
