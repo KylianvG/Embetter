@@ -61,7 +61,7 @@ def soft_debias(E, gender_specific_words, defs, lamb=0.2,
 
     :param object E: WordEmbedding object.
     :param list gender_specific_words: List of gender specific words, which are
-        not dibiased.
+        not debiased.
     :param list defs: List containing lists of corresponding
         definitional words.
     :param float lamb: Lambda value for soft debiasing.
