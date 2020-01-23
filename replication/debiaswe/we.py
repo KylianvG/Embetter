@@ -70,19 +70,26 @@ class WordEmbedding:
                         break
                     s = line.split()
                     v = np.array([float(x) for x in s[1:]])
-                    # if len(vecs) and vecs[-1].shape!=v.shape:
-                    if v.shape != (300,):
-                        print("Got weird line", line)
-                        continue
     #                 v /= np.linalg.norm(v)
                     words.append(s[0])
                     vecs.append(v)
-        self.vecs = np.array(vecs, dtype='float32')
+        # Determine correct (i.e. most common) vector length
+        lengths = [len(v) for v in vecs]
+        correct_length = max(lengths, key=lengths.count)
+        # Filter out any loaded vectors with incorrect length
+        vecs_filtered = []
+        for v in vecs:
+            if len(v) == correct_length:
+                vecs_filtered.append(v)
+            else:
+                print("Got weird line", line)
+        self.vecs = np.array(vecs_filtered, dtype='float32')
         print(self.vecs.shape)
         self.words = words
         self.reindex()
         norms = np.linalg.norm(self.vecs, axis=1)
         if max(norms)-min(norms) > 0.0001:
+            print("Normalizing vectors...")
             self.normalize()
 
     def get_dict(self):
