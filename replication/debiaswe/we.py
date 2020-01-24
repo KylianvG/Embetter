@@ -1,3 +1,12 @@
+"""
+Tools for debiasing word embeddings.
+Extended from the code from:
+
+Man is to Computer Programmer as Woman is to Homemaker? Debiasing Word Embeddings
+Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai
+2016
+"""
+
 from __future__ import print_function, division
 import re
 import sys
@@ -12,14 +21,6 @@ if sys.version_info[0] < 3:
     open = io.open
 else:
     unicode = str
-"""
-Tools for debiasing word embeddings.
-Extended from the code from:
-
-Man is to Computer Programmer as Woman is to Homemaker? Debiasing Word Embeddings
-Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai
-2016
-"""
 
 
 def dedup(seq):

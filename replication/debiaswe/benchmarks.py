@@ -1,12 +1,3 @@
-import os
-import json
-import numpy as np
-from collections import defaultdict
-from scipy import linalg, mat, dot, stats
-from .data import load_professions
-from .we import doPCA
-PKG_DIR = os.path.dirname( os.path.abspath( __file__ ))
-
 """
 Tools for benchmarking word embeddings.
 
@@ -35,6 +26,15 @@ Using well-known benchmarks from:
         human-like biases.
      2017.
 """
+
+import os
+import json
+import numpy as np
+from collections import defaultdict
+from scipy import linalg, mat, dot, stats
+from .data import load_professions, load_definitional_pairs
+from .we import doPCA
+PKG_DIR = os.path.dirname( os.path.abspath( __file__ ))
 
 class Benchmark:
     def __init__(self):
@@ -187,9 +187,7 @@ class Benchmark:
         :returns: effect size
         """
         # Extract definitional word embeddings and determine gender direction.
-        defs_src = os.path.join(PKG_DIR, "../data", "definitional_pairs.json")
-        with open(defs_src, "r") as f:
-            defs = json.load(f)
+        defs = load_definitional_pairs()
         unzipped_defs = list(zip(*defs))
         female_defs = np.array(unzipped_defs[0])
         male_defs = np.array(unzipped_defs[1])

@@ -19,7 +19,7 @@ def load_professions(load_scores=False, available_words=[]):
     :param bool load_scores: Load bias scores if True. Defaults to False.
     :returns: List of professions
     """
-    professions_file = os.path.join(PKG_DIR, '../data', 'professions.json')
+    professions_file = os.path.join(PKG_DIR, './data', 'professions.json')
     with open(professions_file, 'r') as f:
         professions = json.load(f)
     # print('Loaded professions\n' +
@@ -39,7 +39,7 @@ def load_gender_seed():
 
     :returns: List of gender-specific words
     """
-    gender_file = os.path.join(PKG_DIR, '../data', 'gender_specific_seed.json')
+    gender_file = os.path.join(PKG_DIR, './data', 'gender_specific_seed.json')
     with open(gender_file, 'r') as f:
         gender_words = json.load(f)
     return gender_words
@@ -52,7 +52,7 @@ def load_equalize_pairs():
 
     :returns: List of equalize pairs
     """
-    eq_file = os.path.join(PKG_DIR, '../data', 'equalize_pairs.json')
+    eq_file = os.path.join(PKG_DIR, './data', 'equalize_pairs.json')
     with open(eq_file, 'r') as f:
         eq_pairs = json.load(f)
     return eq_pairs
@@ -65,7 +65,7 @@ def load_definitional_pairs():
 
     :returns: List of definitional pairs
     """
-    def_file = os.path.join(PKG_DIR, '../data', 'definitional_pairs.json')
+    def_file = os.path.join(PKG_DIR, './data', 'definitional_pairs.json')
     with open(def_file, 'r') as f:
         def_pairs = json.load(f)
     return def_pairs
