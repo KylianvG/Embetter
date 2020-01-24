@@ -12,7 +12,7 @@ Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai
 PKG_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def load_professions(load_scores=False):
+def load_professions(load_scores=False, available_words=[]):
     """
     Loads professions from data file
 
@@ -58,14 +58,29 @@ def load_equalize_pairs():
     return eq_pairs
 
 
+def load_definitional_pairs():
+    """
+    Loads definitional pairs from data file
+
+
+    :returns: List of definitional pairs
+    """
+    def_file = os.path.join(PKG_DIR, '../data', 'definitional_pairs.json')
+    with open(def_file, 'r') as f:
+        def_pairs = json.load(f)
+    return def_pairs
+
+
 def load_data():
     """
     Loads all data needed for debiasing and inspecting gender bias
     in proffesions.
 
-    :returns: List of professions, list of gender-specific words, list of equalize pairs
+    :returns: List of gender-specific words, list of definitional pairs,
+        list of equalize pairs, list of professions
     """
     profs = load_professions()
     gender_seed = load_gender_seed()
     eq_pairs = load_equalize_pairs()
-    return profs, gender_seed, eq_pairs
+    def_pairs = load_definitional_pairs()
+    return gender_seed, def_pairs, eq_pairs, profs
