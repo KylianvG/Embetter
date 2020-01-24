@@ -73,7 +73,7 @@ def load_equalize_pairs():
 
     :returns: List of equalize pairs
     """
-    eq_file = os.path.join(PKG_DIR, '../data', 'equalize_pairs.json')
+    eq_file = os.path.join(PKG_DIR, './data', 'equalize_pairs.json')
     with open(eq_file, 'r') as f:
         eq_pairs = json.load(f)
 

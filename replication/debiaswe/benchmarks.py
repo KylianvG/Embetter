@@ -1,12 +1,3 @@
-import os
-import json
-import numpy as np
-from collections import defaultdict
-from scipy import linalg, mat, dot, stats
-from .data import load_professions
-from .we import doPCA
-PKG_DIR = os.path.dirname( os.path.abspath( __file__ ))
-
 """
 Tools for benchmarking word embeddings.
 
@@ -35,6 +26,15 @@ Using well-known benchmarks from:
         human-like biases.
      2017.
 """
+
+import os
+import json
+import numpy as np
+from collections import defaultdict
+from scipy import linalg, mat, dot, stats
+from .data import load_professions, load_definitional_pairs
+from .we import doPCA
+PKG_DIR = os.path.dirname( os.path.abspath( __file__ ))
 
 class Benchmark:
     def __init__(self):
@@ -69,8 +69,8 @@ class Benchmark:
     def pprint_compare(results, methods, title):
         assert len(results) == len(methods)
         from prettytable import PrettyTable
-        table = PrettyTable(["Score", "EN-RG-65", "EN-WS-353-ALL",
-            "MSR-analogy"])
+        table = PrettyTable(["Score", "RG-65", "WS-35",
+            "MSR", "WEAT"])
         table.title = 'Results for {} dataset'.format(title)
         for result, method in zip(results, methods):
             table.add_row([method, list(result.values())[1][2],
@@ -187,9 +187,7 @@ class Benchmark:
         :returns: effect size
         """
         # Extract definitional word embeddings and determine gender direction.
-        defs_src = os.path.join(PKG_DIR, "../data", "definitional_pairs.json")
-        with open(defs_src, "r") as f:
-            defs = json.load(f)
+        defs = load_definitional_pairs()
         unzipped_defs = list(zip(*defs))
         female_defs = np.array(unzipped_defs[0])
         male_defs = np.array(unzipped_defs[1])
@@ -200,8 +198,7 @@ class Benchmark:
         # Extract professions and split according to projection on the gender
         # direction.
         professions = load_professions()
-        profession_words = [p[0] for p in professions]
-        sp = sorted([(E.v(w).dot(v_gender), w) for w in profession_words])
+        sp = sorted([(E.v(w).dot(v_gender), w) for w in professions])
         unzipped_sp = list(zip(*sp))
         prof_scores = np.array(unzipped_sp[0])
         sorted_profs = np.array(unzipped_sp[1])
