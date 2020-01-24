@@ -69,8 +69,8 @@ class Benchmark:
     def pprint_compare(results, methods, title):
         assert len(results) == len(methods)
         from prettytable import PrettyTable
-        table = PrettyTable(["Score", "EN-RG-65", "EN-WS-353-ALL",
-            "MSR-analogy"])
+        table = PrettyTable(["Score", "RG-65", "WS-35",
+            "MSR", "WEAT"])
         table.title = 'Results for {} dataset'.format(title)
         for result, method in zip(results, methods):
             table.add_row([method, list(result.values())[1][2],
