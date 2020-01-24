@@ -198,8 +198,7 @@ class Benchmark:
         # Extract professions and split according to projection on the gender
         # direction.
         professions = load_professions()
-        profession_words = [p[0] for p in professions]
-        sp = sorted([(E.v(w).dot(v_gender), w) for w in profession_words])
+        sp = sorted([(E.v(w).dot(v_gender), w) for w in professions])
         unzipped_sp = list(zip(*sp))
         prof_scores = np.array(unzipped_sp[0])
         sorted_profs = np.array(unzipped_sp[1])
