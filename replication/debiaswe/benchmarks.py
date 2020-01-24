@@ -107,7 +107,7 @@ class Benchmark:
                     notfound += 1
             result[file_name] = [found, notfound, self.rho(label,pred)*100]
         msr_res = self.MSR(E, discount_query_words, batch_size)
-        result["MSR-analogy"] = [msr_res[1], msr_res[2], msr_res[0]]
+        result["MSR"] = [msr_res[1], msr_res[2], msr_res[0]]
         weat_res = self.weat(E)
         result["WEAT"] = ["-", "-", weat_res]
         if print:
