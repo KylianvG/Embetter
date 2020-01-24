@@ -27,6 +27,11 @@ Using well-known benchmarks from:
         G. Wolfman, and E. Ruppin.
     Placing search in context: The concept revisited.
     2001.
+(WEAT)
+    Aylin Caliskan, Joanna J Bryson, and ArvindNarayanan.
+    Semantics derived automatically from language corpora contain
+        human-like biases.
+     2017.
 """
 
 class Benchmark:
@@ -73,7 +78,7 @@ class Benchmark:
     def evaluate(self, E, title, discount_query_words=False, batch_size=200,
         print=True):
         """
-        Evaluates RG-65, WS-353 and MSR benchmarks
+        Evaluates RG-65, WS-353, MSR, and WEAT benchmarks
 
 
         :param object E: WordEmbedding object.
@@ -223,8 +228,8 @@ class Benchmark:
         vectors in the larger one.
 
 
-        :param ndarray A: (len(words), dim) shaped numpy ndarrary of word vectors
-        :param ndarray B: (len(words), dim) shaped numpy ndarrary of word vectors
+        :param ndarray A: numpy ndarrary of word vectors
+        :param ndarray B: numpy ndarrary of word vectors
         :return: tuple of two balanced word vector matrixes
         """
 
