@@ -1,16 +1,19 @@
 import os
+import json
 import numpy as np
 from collections import defaultdict
 from scipy import linalg, mat, dot, stats
-import argparse
-import debiaswe as we
-DATA_ROOT = os.path.dirname( os.path.abspath( __file__ ) ) + "/benchmark_data/"
+from .data import load_professions
+from .we import doPCA
+PKG_DIR = os.path.dirname( os.path.abspath( __file__ ))
 
 """
 Tools for benchmarking word embeddings.
 
 Code adapted and extended from:
 https://github.com/k-kawakami/embedding-evaluation
+and
+https://github.com/chadaeun/weat_replication
 
 Using well-known benchmarks from:
 (MSR)
@@ -26,15 +29,21 @@ Using well-known benchmarks from:
         G. Wolfman, and E. Ruppin.
     Placing search in context: The concept revisited.
     2001.
+(WEAT)
+    Aylin Caliskan, Joanna J Bryson, and ArvindNarayanan.
+    Semantics derived automatically from language corpora contain
+        human-like biases.
+     2017.
 """
 
 class Benchmark:
     def __init__(self):
+        self.DATA_ROOT = os.path.join(PKG_DIR, "benchmark_data")
         self.files = [file_name.replace(".txt","") for file_name
-            in os.listdir(DATA_ROOT) if ".txt" in file_name]
+            in os.listdir(self.DATA_ROOT) if ".txt" in file_name]
         self.dataset=defaultdict(list)
         for file_name in self.files:
-            for line in open(DATA_ROOT + "/" + file_name + ".txt"):
+            for line in open(self.DATA_ROOT + "/" + file_name + ".txt"):
                 self.dataset[file_name].append([ float(w) if i == 2 else w
                     for i, w in enumerate(line.strip().split())])
 
@@ -71,7 +80,7 @@ class Benchmark:
     def evaluate(self, E, title, discount_query_words=False, batch_size=200,
         print=True):
         """
-        Evaluates RG-65, WS-353 and MSR benchmarks
+        Evaluates RG-65, WS-353, MSR, and WEAT benchmarks
 
 
         :param object E: WordEmbedding object.
@@ -99,6 +108,8 @@ class Benchmark:
             result[file_name] = [found, notfound, self.rho(label,pred)*100]
         msr_res = self.MSR(E, discount_query_words, batch_size)
         result["MSR-analogy"] = [msr_res[1], msr_res[2], msr_res[0]]
+        weat_res = self.weat(E)
+        result["WEAT"] = ["-", "-", weat_res]
         if print:
             self.pprint(result, title)
         return result
@@ -119,11 +130,11 @@ class Benchmark:
         """
         # Load and format the benchmark data
         analogy_answers = np.genfromtxt(
-            DATA_ROOT + "word_relationship.answers",
+            self.DATA_ROOT + "/word_relationship.answers",
             dtype='str', encoding='utf-8')
         analogy_a = np.expand_dims(analogy_answers[:,1], axis=1)
-        analogy_q = np.genfromtxt(DATA_ROOT + "word_relationship.questions",
-            dtype='str', encoding='utf-8')
+        analogy_q = np.genfromtxt(self.DATA_ROOT +
+            "/word_relationship.questions", dtype='str', encoding='utf-8')
 
         # Remove Out Of Vocabulary words_not_found
         analogy_stack = np.hstack((analogy_a, analogy_q))
@@ -165,33 +176,70 @@ class Benchmark:
 
         return accuracy, len(filtered_answers), words_not_found
 
-if __name__ == "__main__":
+    def weat(self, E):
+        """
+        Calculated WEAT effect size of association between female and male
+            words as attributes and typically female and male professions as
+            target words. Score is [-2,2], where closer to 0 is less biased.
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--embedding_filename",
-        help="The name of the embedding")
-    parser.add_argument("--table_title", type=str, default="benchmark",
-        help="Title of the printed table")
 
-    print_parser = parser.add_mutually_exclusive_group(required=False)
-    print_parser.add_argument('--print', dest='print_t', action='store_true')
-    print_parser.add_argument('--dont-print', dest='print_t',
-        action='store_false')
-    parser.set_defaults(print_t=True)
+        :param object E: WordEmbedding object.
+        :returns: effect size
+        """
+        # Extract definitional word embeddings and determine gender direction.
+        defs_src = os.path.join(PKG_DIR, "../data", "definitional_pairs.json")
+        with open(defs_src, "r") as f:
+            defs = json.load(f)
+        unzipped_defs = list(zip(*defs))
+        female_defs = np.array(unzipped_defs[0])
+        male_defs = np.array(unzipped_defs[1])
+        A = E.vecs[np.vectorize(E.index.__getitem__)(female_defs)]
+        B = E.vecs[np.vectorize(E.index.__getitem__)(male_defs)]
+        v_gender = doPCA(defs, E).components_[0]
 
-    query_parser = parser.add_mutually_exclusive_group(required=False)
-    query_parser.add_argument('--discard-query-words', dest='dqw',
-        action='store_true')
-    query_parser.add_argument('--dont-discard', dest='dqw',
-        action='store_false')
-    parser.set_defaults(dqw=False)
+        # Extract professions and split according to projection on the gender
+        # direction.
+        professions = load_professions()
+        profession_words = [p[0] for p in professions]
+        sp = sorted([(E.v(w).dot(v_gender), w) for w in profession_words])
+        unzipped_sp = list(zip(*sp))
+        prof_scores = np.array(unzipped_sp[0])
+        sorted_profs = np.array(unzipped_sp[1])
+        female_prof = sorted_profs[prof_scores>0]
+        male_prof = sorted_profs[prof_scores<0]
 
-    args = parser.parse_args()
-    print(args)
+        # Balance target sets and extract their embeddings.
+        female_prof, male_prof = self.balance_word_vectors(female_prof,
+            male_prof)
+        X = E.vecs[np.vectorize(E.index.__getitem__)(np.array(female_prof))]
+        Y = E.vecs[np.vectorize(E.index.__getitem__)(np.array(male_prof))]
 
-    E = we.WordEmbedding(args.embedding_filename)
-    B = Benchmark()
+        # Calculate effect size
+        x_assoc = np.mean((X @ A.T), axis=-1) - np.mean((X @ B.T), axis=-1)
+        y_assoc = np.mean((Y @ A.T), axis=-1) - np.mean((Y @ B.T), axis=-1)
 
-    results = B.evaluate(E, args.table_title, args.dqw, args.print_t)
-    if not args.print_t:
-        print(results)
+        num = np.mean(x_assoc, axis=-1) - np.mean(y_assoc, axis=-1)
+        denom = np.std(np.concatenate((x_assoc, y_assoc), axis=0))
+
+        return num/denom
+
+    @staticmethod
+    def balance_word_vectors(A, B):
+        """
+        Balance size of two lists of word vectors by randomly deleting some
+        vectors in the larger one.
+
+
+        :param ndarray A: numpy ndarrary of word vectors
+        :param ndarray B: numpy ndarrary of word vectors
+        :return: tuple of two balanced word vector matrixes
+        """
+
+        diff = len(A) - len(B)
+
+        if diff > 0:
+            A = np.delete(A, np.random.choice(len(A), diff, 0), axis=0)
+        else:
+            B = np.delete(B, np.random.choice(len(B), -diff, 0), axis=0)
+
+        return A, B
