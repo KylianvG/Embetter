@@ -12,6 +12,8 @@ Tools for benchmarking word embeddings.
 
 Code adapted and extended from:
 https://github.com/k-kawakami/embedding-evaluation
+and
+https://github.com/chadaeun/weat_replication
 
 Using well-known benchmarks from:
 (MSR)
