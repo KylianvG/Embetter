@@ -27,7 +27,7 @@ def load_professions(load_scores=False, embed_words=None):
           # 'stereotypical female -1.0 -> stereotypical male 1.0')
     assert embed_words is None or type(embed_words) == list
 
-    professions_file = os.path.join(PKG_DIR, '../data', 'professions.json')
+    professions_file = os.path.join(PKG_DIR, 'data', 'professions.json')
     with open(professions_file, 'r') as f:
         professions = json.load(f)
 
@@ -55,7 +55,7 @@ def load_gender_seed(embed_words=None):
     """
     assert embed_words is None or type(embed_words) == list
 
-    gender_file = os.path.join(PKG_DIR, '../data', 'gender_specific_seed.json')
+    gender_file = os.path.join(PKG_DIR, 'data', 'gender_specific_seed.json')
     with open(gender_file, 'r') as f:
         gender_words = json.load(f)
 
@@ -73,7 +73,7 @@ def load_equalize_pairs():
 
     :returns: List of equalize pairs
     """
-    eq_file = os.path.join(PKG_DIR, './data', 'equalize_pairs.json')
+    eq_file = os.path.join(PKG_DIR, 'data', 'equalize_pairs.json')
     with open(eq_file, 'r') as f:
         eq_pairs = json.load(f)
 
@@ -90,7 +90,7 @@ def load_definitional_pairs(embed_words=None):
     """
     assert embed_words is None or type(embed_words) == list
 
-    def_file = os.path.join(PKG_DIR, '../data', 'definitional_pairs.json')
+    def_file = os.path.join(PKG_DIR, 'data', 'definitional_pairs.json')
     with open(def_file, 'r') as f:
         def_pairs = json.load(f)
 

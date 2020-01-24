@@ -58,7 +58,7 @@ class WordEmbedding:
         if embedding in ID.keys():
             extension = ID[embedding]["extension"]
             fname = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                "..", "embeddings", embedding + extension)
+                "embeddings", embedding + extension)
             # If embedding file not present, download it
             if not os.path.exists(fname):
                 download(embedding)
