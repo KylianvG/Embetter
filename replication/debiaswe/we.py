@@ -1,9 +1,12 @@
 from __future__ import print_function, division
 import re
 import sys
+import os
 import numpy as np
 import scipy.sparse
 from sklearn.decomposition import PCA
+from debiaswe.download import download
+from debiaswe.embeddings_config import ID
 if sys.version_info[0] < 3:
     import io
     open = io.open
@@ -17,13 +20,6 @@ Man is to Computer Programmer as Woman is to Homemaker? Debiasing Word Embedding
 Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai
 2016
 """
-
-DEFAULT_NUM_WORDS = 27000
-FILENAMES = {"g_wiki": "glove.6B.300d.small.txt",
-             "g_twitter": "glove.twitter.27B.200d.small.txt",
-             "g_crawl": "glove.840B.300d.small.txt",
-             "w2v": "GoogleNews-word2vec.small.txt",
-             "w2v_large": "GoogleNews-word2vec.txt"}
 
 
 def dedup(seq):
@@ -48,49 +44,73 @@ def to_utf8(text, errors='strict', encoding='utf8'):
 
 
 class WordEmbedding:
-    def __init__(self, fname, limit=None):
+    def __init__(self, embedding, limit=None):
         self.thresh = None
         self.max_words = None
-        self.desc = fname
-        print("*** Reading data from " + fname)
+        self.desc = embedding
+
+        from_file = False
+        fname = None
+
+        # If embedding in standard available embeddings, check if download
+        # is needed.
+        if embedding in ID.keys():
+            extension = ID[embedding]["extension"]
+            fname = os.path.dirname(os.path.abspath(__file__)) \
+                + "\\..\\embeddings\\" + embedding + extension
+            # If embedding file not present, download it
+            if not os.path.exists(fname):
+                download(embedding)
+        else:
+            # Check for file path
+            assert os.path.exists(embedding) and os.path.isfile(embedding), \
+                "Not an available embedding or known file path"
+            # If valid file available, load from that file
+            from_file = True
+            fname = embedding
+            print(f"Creating embedding from file: {os.path.abspath(embedding)}")
+
+        # Load binary files using gensim
         if fname.endswith(".bin"):
             import gensim.models
             model = gensim.models.KeyedVectors.load_word2vec_format(fname,
                 binary=True, limit=limit)
-            words = sorted([w for w in model.vocab],
+            self.words = sorted([w for w in model.vocab],
                 key=lambda w: model.vocab[w].index)
-            vecs = [model[w] for w in words]
+            self.vecs = np.array([model[w] for w in words], dtype='float32')
+        # Load non binary files by reading line by line
         else:
             vecs = []
             words = []
-
+            # Open and read from file
             with open(fname, "r", encoding='utf8') as f:
                 for line in f:
                     if len(words) == limit:
                         break
                     s = line.split()
                     v = np.array([float(x) for x in s[1:]])
-    #                 v /= np.linalg.norm(v)
                     words.append(s[0])
                     vecs.append(v)
-        # Determine correct (i.e. most common) vector length
-        lengths = [len(v) for v in vecs]
-        correct_length = max(lengths, key=lengths.count)
-        # Filter out any loaded vectors with incorrect length
-        vecs_filtered = []
-        for v in vecs:
-            if len(v) == correct_length:
-                vecs_filtered.append(v)
-            else:
-                print("Got weird line", line)
-        self.vecs = np.array(vecs_filtered, dtype='float32')
-        print(self.vecs.shape)
-        self.words = words
+            # Determine correct (i.e. most common) vector length
+            lengths = [len(v) for v in vecs]
+            correct_length = max(lengths, key=lengths.count)
+            # Filter out any loaded vectors with uncommon length
+            vecs_filtered = []
+            for v in vecs:
+                if len(v) == correct_length:
+                    vecs_filtered.append(v)
+                elif from_file:
+                    print("Got weird line:", line)
+            self.vecs = np.array(vecs_filtered, dtype='float32')
+            self.words = words
+
+        # If needed, reindex and normalize after loading
         self.reindex()
         norms = np.linalg.norm(self.vecs, axis=1)
         if max(norms)-min(norms) > 0.0001:
-            print("Normalizing vectors...")
+            if from_file: print("Normalizing vectors...")
             self.normalize()
+        print("Embedding shape:", self.vecs.shape)
 
     def get_dict(self):
         return {key:value for key, value in zip(self.words, self.vecs)}
@@ -131,13 +151,13 @@ class WordEmbedding:
         self.reindex()
 
     def save(self, filename):
-        with open(filename, "w") as f:
+        with open(filename, "w", encoding="utf8") as f:
             f.write("\n".join([w+" " + " ".join([str(x) for x in v]) for w, v
                 in zip(self.words, self.vecs)]))
         print("Wrote", self.n, "words to", filename)
 
     def save_w2v(self, filename, binary=True):
-        with open(filename, 'wb') as fout:
+        with open(filename, 'wb', encoding="utf8") as fout:
             fout.write(to_utf8("%s %s\n" % self.vecs.shape))
             # store in sorted order: most frequent words at the top
             for i, word in enumerate(self.words):
@@ -291,4 +311,4 @@ def doPCA(pairs, embedding, num_components = 10):
 
 
 def drop(u, v):
-    return u - v * u.dot(v) / v.dot(v)
+    return u - v * (u.dot(v) / v.dot(v))

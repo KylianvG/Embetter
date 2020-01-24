@@ -16,27 +16,22 @@ TODO: Embedding descriptions (e.g. embedding dimensions, training data)
 
 import requests
 import os
-
-ID = {
-    "word2vec_large" : "0",
-    "word2vec_small" : "1",
-    "glove_small" : "2",
-    "fasttext_large" : "3",
-    "fasttext_small" : "1vW9zYwt4s_i2RMDV4kytGR5wycpV_9vW",
-    "test" : "18C2zXPdW0jh2UO4R97jXx82BejzPeZOi",
-}
+from debiaswe.embeddings_config import ID
 
 def download(embedding):
-    # Destination is current file destination, one directory up, then the
-    # "embeddings" directory. Embeddings are saved as .txt files.
-    destination = os.path.dirname(os.path.abspath(__file__)) \
-        + "\\..\\embeddings\\" + embedding + ".txt"
+    assert embedding in ID.keys(), "Unkown embedding."
 
     URL = "https://docs.google.com/uc?export=download"
-    id = ID[embedding]
+    id = ID[embedding]["id"]
+    extension = ID[embedding]["extension"]
+
+    # Destination is current file destination, one directory up, then the
+    # "embeddings" directory.
+    destination = os.path.dirname(os.path.abspath(__file__)) \
+        + "\\..\\embeddings\\" + embedding + extension
+    print(f"Downloading {embedding} embedding to {os.path.abspath(destination)}")
 
     session = requests.Session()
-
     response = session.get(URL, params = { 'id' : id }, stream = True)
     token = get_confirm_token(response)
 
