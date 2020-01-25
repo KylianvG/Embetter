@@ -78,7 +78,7 @@ class WordEmbedding:
                 binary=True, limit=limit)
             self.words = sorted([w for w in model.vocab],
                 key=lambda w: model.vocab[w].index)
-            self.vecs = np.array([model[w] for w in words], dtype='float32')
+            self.vecs = np.array([model[w] for w in self.words], dtype='float32')
         # Load non binary files by reading line by line
         else:
             vecs = []
