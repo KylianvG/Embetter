@@ -138,7 +138,7 @@ class Benchmark:
 
         # Remove Out Of Vocabulary words_not_found
         analogy_stack = np.hstack((analogy_a, analogy_q))
-        present_words = np.isin(analogy_stack, E.words).all(axis=1)
+        present_words = np.isin(analogy_stack, E.words()).all(axis=1)
         filtered_answers = analogy_a[present_words]
         filtered_questions = analogy_q[present_words]
 
@@ -149,10 +149,10 @@ class Benchmark:
             n_batches)):
             # print("Processing batch", i+1, "of", n_batches)
             # Extract relevant embeddings from E
-            a = E.vecs[np.vectorize(E.index.__getitem__)(batch[:,0])]
-            x = E.vecs[np.vectorize(E.index.__getitem__)(batch[:,1])]
-            b = E.vecs[np.vectorize(E.index.__getitem__)(batch[:,2])]
-            all_y = E.vecs
+            a = E.vecs()[np.vectorize(E.index().__getitem__)(batch[:,0])]
+            x = E.vecs()[np.vectorize(E.index().__getitem__)(batch[:,1])]
+            b = E.vecs()[np.vectorize(E.index().__getitem__)(batch[:,2])]
+            all_y = E.vecs()
 
             # Calculate scores
             batch_pos = ((1+all_y@x.T)/2)*((1+all_y@b.T)/2)
@@ -161,13 +161,13 @@ class Benchmark:
 
             # If set, set scores of query words to 0
             if discount_query_words:
-                query_ind = np.vectorize(E.index.__getitem__)(batch).T
+                query_ind = np.vectorize(E.index().__getitem__)(batch).T
                 batch_scores[query_ind, np.arange(
                     batch_scores.shape[1])[None,:]] = 0
 
 
             # Retrieve words with best analogy scores
-            y.append(np.array(E.words)[np.argmax(batch_scores, axis=0)])
+            y.append(np.array(E.words())[np.argmax(batch_scores, axis=0)])
 
         # Calculate returnable metrics
         y = np.hstack(y)[:,None]
@@ -191,8 +191,8 @@ class Benchmark:
         unzipped_defs = list(zip(*defs))
         female_defs = np.array(unzipped_defs[0])
         male_defs = np.array(unzipped_defs[1])
-        A = E.vecs[np.vectorize(E.index.__getitem__)(female_defs)]
-        B = E.vecs[np.vectorize(E.index.__getitem__)(male_defs)]
+        A = E.vecs()[np.vectorize(E.index().__getitem__)(female_defs)]
+        B = E.vecs()[np.vectorize(E.index().__getitem__)(male_defs)]
         v_gender = doPCA(defs, E).components_[0]
 
         # Extract professions and split according to projection on the gender
@@ -208,8 +208,8 @@ class Benchmark:
         # Balance target sets and extract their embeddings.
         female_prof, male_prof = self.balance_word_vectors(female_prof,
             male_prof)
-        X = E.vecs[np.vectorize(E.index.__getitem__)(np.array(female_prof))]
-        Y = E.vecs[np.vectorize(E.index.__getitem__)(np.array(male_prof))]
+        X = E.vecs()[np.vectorize(E.index().__getitem__)(np.array(female_prof))]
+        Y = E.vecs()[np.vectorize(E.index().__getitem__)(np.array(male_prof))]
 
         # Calculate effect size
         x_assoc = np.mean((X @ A.T), axis=-1) - np.mean((X @ B.T), axis=-1)

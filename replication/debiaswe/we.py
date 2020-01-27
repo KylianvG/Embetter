@@ -46,6 +46,9 @@ def to_utf8(text, errors='strict', encoding='utf8'):
 
 class WordEmbedding:
     def __init__(self, embedding, limit=None):
+        self.words = []
+        self.vecs = None
+        self.index = None
         self.thresh = None
         self.max_words = None
         self.desc = embedding
@@ -105,7 +108,7 @@ class WordEmbedding:
             self.vecs = np.array(vecs_filtered, dtype='float32')
             self.words = words
 
-        # If needed, reindex and normalize after loading
+        # Reindex and if needed normalize after loading
         self.reindex()
         norms = np.linalg.norm(self.vecs, axis=1)
         if max(norms)-min(norms) > 0.0001:
@@ -115,6 +118,18 @@ class WordEmbedding:
 
     def get_dict(self):
         return {key:value for key, value in zip(self.words, self.vecs)}
+
+    @property
+    def words(self):
+        return self.words
+
+    @property
+    def vecs(self):
+        return self.vecs
+
+    @property
+    def index(self):
+        return self.index
 
     def reindex(self):
         self.index = {w: i for i, w in enumerate(self.words)}

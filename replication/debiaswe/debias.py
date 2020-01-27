@@ -34,21 +34,21 @@ def hard_debias(E, gender_specific_words, definitional, equalize):
     """
     gender_direction = we.doPCA(definitional, E).components_[0]
     specific_set = set(gender_specific_words)
-    for i, w in enumerate(E.words):
+    for i, w in enumerate(E.words()):
         if w not in specific_set:
-            E.vecs[i] = we.drop(E.vecs[i], gender_direction)
+            E.vecs()[i] = we.drop(E.vecs()[i], gender_direction)
     E.normalize()
     candidates = {x for e1, e2 in equalize for x in [(e1.lower(), e2.lower()),
                                                      (e1.title(), e2.title()),
                                                      (e1.upper(), e2.upper())]}
     for (a, b) in candidates:
-        if (a in E.index and b in E.index):
+        if (a in E.index() and b in E.index()):
             y = we.drop((E.v(a) + E.v(b)) / 2, gender_direction)
             z = np.sqrt(1 - np.linalg.norm(y)**2)
             if (E.v(a) - E.v(b)).dot(gender_direction) < 0:
                 z = -z
-            E.vecs[E.index[a]] = z * gender_direction + y
-            E.vecs[E.index[b]] = -z * gender_direction + y
+            E.vecs()[E.index()[a]] = z * gender_direction + y
+            E.vecs()[E.index()[b]] = -z * gender_direction + y
     E.normalize()
 
 def soft_debias(E, gender_specific_words, defs, lamb=0.2,
@@ -73,10 +73,10 @@ def soft_debias(E, gender_specific_words, defs, lamb=0.2,
     :param list decrease_times: Epoch numbers to decrease learning rate.
     :returns: None
     """
-    W = torch.from_numpy(E.vecs).t()
+    W = torch.from_numpy(E.vecs()).t()
     dim = W.shape[0]
-    neutrals = list(set(E.words) - set(gender_specific_words))
-    neutrals = torch.tensor([E.vecs[E.index[w]] for w in neutrals]).t()
+    neutrals = list(set(E.words()) - set(gender_specific_words))
+    neutrals = torch.tensor([E.vecs()[E.index()[w]] for w in neutrals]).t()
     gender_direction = torch.tensor([we.doPCA(defs, E).components_[0]]).t()
     l = lamb # lambda
     u, s, _ = torch.svd(W)
@@ -115,7 +115,7 @@ def soft_debias(E, gender_specific_words, defs, lamb=0.2,
 
     debiased_embeds = transform.mm(W).t().numpy()
     debiased_embeds = debiased_embeds / np.linalg.norm(debiased_embeds, axis=1)[:, None]
-    E.vecs = debiased_embeds
+    E.vecs() = debiased_embeds
 
 
 if __name__ == "__main__":
