@@ -5,6 +5,7 @@ from collections import defaultdict
 from scipy import linalg, mat, dot, stats
 from .data import load_professions
 from .we import doPCA
+from debiaswe.logprogress import log_progress
 PKG_DIR = os.path.dirname( os.path.abspath( __file__ ))
 
 """
@@ -95,7 +96,7 @@ class Benchmark:
         word_dict = E.get_dict()
         result = {}
         vocab = word_dict.keys()
-        for file_name, data in self.dataset.items():
+        for file_name, data in log_progress(self.dataset.items()):
             pred, label, found, notfound = [] ,[], 0, 0
             for datum in data:
                 if datum[0] in vocab and datum[1] in vocab:
