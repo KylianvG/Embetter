@@ -19,7 +19,7 @@ import os
 from debiaswe.embeddings_config import ID
 
 def download(embedding):
-    assert embedding in ID.keys(), "Unkown embedding."
+    assert embedding in ID.keys(), "Unknown embedding."
 
     URL = "https://docs.google.com/uc?export=download"
     id = ID[embedding]["id"]
