@@ -1,13 +1,3 @@
-import os
-import json
-import numpy as np
-from collections import defaultdict
-from scipy import linalg, mat, dot, stats
-from .data import load_professions
-from .we import doPCA
-from debiaswe.logprogress import log_progress
-PKG_DIR = os.path.dirname( os.path.abspath( __file__ ))
-
 """
 Tools for benchmarking word embeddings.
 
@@ -36,6 +26,16 @@ Using well-known benchmarks from:
         human-like biases.
      2017.
 """
+
+import os
+import json
+import numpy as np
+from collections import defaultdict
+from scipy import linalg, mat, dot, stats
+from .data import load_professions, load_definitional_pairs
+from .we import doPCA
+from debiaswe.logprogress import log_progress
+PKG_DIR = os.path.dirname( os.path.abspath( __file__ ))
 
 class Benchmark:
     def __init__(self):
@@ -96,7 +96,7 @@ class Benchmark:
         word_dict = E.get_dict()
         result = {}
         vocab = word_dict.keys()
-        for file_name, data in log_progress(self.dataset.items()):
+        for file_name, data in self.dataset.items():
             pred, label, found, notfound = [] ,[], 0, 0
             for datum in data:
                 if datum[0] in vocab and datum[1] in vocab:
@@ -108,7 +108,7 @@ class Benchmark:
                     notfound += 1
             result[file_name] = [found, notfound, self.rho(label,pred)*100]
         msr_res = self.MSR(E, discount_query_words, batch_size)
-        result["MSR-analogy"] = [msr_res[1], msr_res[2], msr_res[0]]
+        result["MSR"] = [msr_res[1], msr_res[2], msr_res[0]]
         weat_res = self.weat(E)
         result["WEAT"] = ["-", "-", weat_res]
         if print:
@@ -146,8 +146,8 @@ class Benchmark:
         # Batch the queries up
         y = []
         n_batches = len(analogy_answers) // batch_size
-        for i, batch in enumerate(np.array_split(filtered_questions,
-            n_batches)):
+        for i, batch in enumerate(log_progress(np.array_split(filtered_questions,
+            n_batches))):
             # print("Processing batch", i+1, "of", n_batches)
             # Extract relevant embeddings from E
             a = E.vecs[np.vectorize(E.index.__getitem__)(batch[:,0])]
@@ -156,15 +156,15 @@ class Benchmark:
             all_y = E.vecs
 
             # Calculate scores
-            batch_pos = ((1+all_y@x.T)/2)*((1+all_y@b.T)/2)
-            batch_neg = (1+all_y@a.T+0.00000001)/2
-            batch_scores = batch_pos/batch_neg
+            batch_pos = ((1 + all_y @ x.T) / 2) * ((1 + all_y @ b.T) / 2)
+            batch_neg = (1 + all_y @ a.T + 0.00000001) / 2
+            batch_scores = batch_pos / batch_neg
 
             # If set, set scores of query words to 0
             if discount_query_words:
                 query_ind = np.vectorize(E.index.__getitem__)(batch).T
                 batch_scores[query_ind, np.arange(
-                    batch_scores.shape[1])[None,:]] = 0
+                    batch_scores.shape[1])[None, :]] = 0
 
 
             # Retrieve words with best analogy scores
@@ -172,7 +172,7 @@ class Benchmark:
 
         # Calculate returnable metrics
         y = np.hstack(y)[:,None]
-        accuracy = np.mean(y==filtered_answers)*100
+        accuracy = np.mean(y == filtered_answers) * 100
         words_not_found = len(analogy_answers) - len(filtered_answers)
 
         return accuracy, len(filtered_answers), words_not_found
@@ -188,9 +188,7 @@ class Benchmark:
         :returns: effect size
         """
         # Extract definitional word embeddings and determine gender direction.
-        defs_src = os.path.join(PKG_DIR, "../data", "definitional_pairs.json")
-        with open(defs_src, "r") as f:
-            defs = json.load(f)
+        defs = load_definitional_pairs()
         unzipped_defs = list(zip(*defs))
         female_defs = np.array(unzipped_defs[0])
         male_defs = np.array(unzipped_defs[1])
@@ -201,8 +199,7 @@ class Benchmark:
         # Extract professions and split according to projection on the gender
         # direction.
         professions = load_professions()
-        profession_words = [p[0] for p in professions]
-        sp = sorted([(E.v(w).dot(v_gender), w) for w in profession_words])
+        sp = sorted([(E.v(w).dot(v_gender), w) for w in professions])
         unzipped_sp = list(zip(*sp))
         prof_scores = np.array(unzipped_sp[0])
         sorted_profs = np.array(unzipped_sp[1])
@@ -222,7 +219,7 @@ class Benchmark:
         num = np.mean(x_assoc, axis=-1) - np.mean(y_assoc, axis=-1)
         denom = np.std(np.concatenate((x_assoc, y_assoc), axis=0))
 
-        return num/denom
+        return num / denom
 
     @staticmethod
     def balance_word_vectors(A, B):

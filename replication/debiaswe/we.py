@@ -1,3 +1,12 @@
+"""
+Tools for debiasing word embeddings.
+Extended from the code from:
+
+Man is to Computer Programmer as Woman is to Homemaker? Debiasing Word Embeddings
+Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai
+2016
+"""
+
 from __future__ import print_function, division
 import re
 import sys
@@ -12,14 +21,6 @@ if sys.version_info[0] < 3:
     open = io.open
 else:
     unicode = str
-"""
-Tools for debiasing word embeddings.
-Extended from the code from:
-
-Man is to Computer Programmer as Woman is to Homemaker? Debiasing Word Embeddings
-Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai
-2016
-"""
 
 
 def dedup(seq):
@@ -57,7 +58,7 @@ class WordEmbedding:
         if embedding in ID.keys():
             extension = ID[embedding]["extension"]
             fname = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                "..", "embeddings", embedding + extension)
+                "embeddings", embedding + extension)
             # If embedding file not present, download it
             if not os.path.exists(fname):
                 download(embedding)
@@ -77,7 +78,7 @@ class WordEmbedding:
                 binary=True, limit=limit)
             self.words = sorted([w for w in model.vocab],
                 key=lambda w: model.vocab[w].index)
-            self.vecs = np.array([model[w] for w in words], dtype='float32')
+            self.vecs = np.array([model[w] for w in self.words], dtype='float32')
         # Load non binary files by reading line by line
         else:
             vecs = []

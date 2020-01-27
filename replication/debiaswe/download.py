@@ -28,7 +28,7 @@ def download(embedding):
     # Destination is current file destination, one directory up, then the
     # "embeddings" directory.
     destination = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-        "..", "embeddings", embedding + extension)
+        "embeddings", embedding + extension)
     print(f"Downloading {embedding} embedding to {os.path.abspath(destination)}")
 
     session = requests.Session()
