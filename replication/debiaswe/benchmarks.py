@@ -208,8 +208,10 @@ class Benchmark:
         # Balance target sets and extract their embeddings.
         female_prof, male_prof = self.balance_word_vectors(female_prof,
             male_prof)
+
         X = E.vecs[np.vectorize(E.index.__getitem__)(np.array(female_prof))]
         Y = E.vecs[np.vectorize(E.index.__getitem__)(np.array(male_prof))]
+
 
         # Calculate effect size
         x_assoc = np.mean((X @ A.T), axis=-1) - np.mean((X @ B.T), axis=-1)
