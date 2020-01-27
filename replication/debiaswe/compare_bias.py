@@ -19,7 +19,8 @@ Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai
 2016
 """
 
-def plot_comparison_embeddings(datapoints_a, datapoints_b, embedding_names):
+def plot_comparison_embeddings(datapoints_a, datapoints_b, embedding_names, 
+        name):
     """
     Plot the occupational bias comparison across two embeddings.
 
@@ -31,11 +32,11 @@ def plot_comparison_embeddings(datapoints_a, datapoints_b, embedding_names):
     fig, ax = plt.subplots()
     ax.scatter(datapoints_b, datapoints_a, s=10)
     ax.set_ylim(-0.3, 0.5)
-    ax.set_xlim(-0.3, 0.5)
+    ax.set_xlim(-0.2, 0.3)
     plt.xlabel("Gender axis of {}".format(embedding_names[1]), fontsize=11)
     plt.ylabel("Gender axis of {}".format(embedding_names[0]), fontsize=11)
     plt.title("Occupational gender bias across embeddings", pad=18, fontsize=13)
-    fig.savefig("compare_bias.png")
+    fig.savefig("{}.png".format(name))
     plt.show()
 
 
@@ -86,7 +87,7 @@ def project_profession_words(E, professions, unique_words):
     return sp, occupations, v_gender
 
 
-def compare_occupational_bias(E_a, E_b, embedding_names):
+def compare_occupational_bias(E_a, E_b, embedding_names, name):
     """
     Compare occupational bias across word embeddings.
 
@@ -103,7 +104,7 @@ def compare_occupational_bias(E_a, E_b, embedding_names):
     unique_occupations = list(set(occupations_a).intersection(occupations_b))
     datapoints_a = get_datapoints_embedding(E_a, v_gender_a, professions, unique_occupations)
     datapoints_b = get_datapoints_embedding(E_b, v_gender_b, professions, unique_occupations)
-    plot_comparison_embeddings(datapoints_a, datapoints_b, embedding_names)
+    plot_comparison_embeddings(datapoints_a, datapoints_b, embedding_names, name)
 
 
 
@@ -115,6 +116,8 @@ if __name__ == "__main__":
         help="The name of the embedding to compare with")
     parser.add_argument("embedding_names", 
         help="List of two strings with embedding names")
+    parser.add_argument("name", 
+        help="Name of plot save")
 
     if len(sys.argv[2] != 2):
         print("Please give third argument the names of two embeddings as list")
@@ -123,4 +126,4 @@ if __name__ == "__main__":
     print(args)
 
     compare_occupational_bias(embedding_filename_a, embedding_filename_b, 
-        embedding_names)
+        embedding_names, name)
