@@ -1,4 +1,8 @@
-# Code from: https://github.com/kuk/log-progress
+"""
+Clear progress indicator for when running experiments in a notebook.
+
+Code from: https://github.com/kuk/log-progress
+"""
 
 def log_progress(sequence, every=None, size=None, name='Items'):
     from ipywidgets import IntProgress, HTML, VBox
