@@ -46,9 +46,9 @@ def to_utf8(text, errors='strict', encoding='utf8'):
 
 class WordEmbedding:
     def __init__(self, embedding, limit=None):
-        self.words = []
-        self.vecs = None
-        self.index = None
+        self._words = []
+        self._vecs= None
+        self._index = None
         self.thresh = None
         self.max_words = None
         self.desc = embedding
@@ -79,9 +79,9 @@ class WordEmbedding:
             import gensim.models
             model = gensim.models.KeyedVectors.load_word2vec_format(fname,
                 binary=True, limit=limit)
-            self.words = sorted([w for w in model.vocab],
+            self._words = sorted([w for w in model.vocab],
                 key=lambda w: model.vocab[w].index)
-            self.vecs = np.array([model[w] for w in self.words], dtype='float32')
+            self._vecs = np.array([model[w] for w in self._words], dtype='float32')
         # Load non binary files by reading line by line
         else:
             vecs = []
@@ -105,55 +105,67 @@ class WordEmbedding:
                     vecs_filtered.append(v)
                 elif from_file:
                     print("Got weird line:", line)
-            self.vecs = np.array(vecs_filtered, dtype='float32')
-            self.words = words
+            self._vecs = np.array(vecs_filtered, dtype='float32')
+            self._words = words
 
         # Reindex and if needed normalize after loading
         self.reindex()
-        norms = np.linalg.norm(self.vecs, axis=1)
+        norms = np.linalg.norm(self._vecs, axis=1)
         if max(norms)-min(norms) > 0.0001:
             if from_file: print("Normalizing vectors...")
             self.normalize()
-        print("Embedding shape:", self.vecs.shape)
+        print("Embedding shape:", self._vecs.shape)
 
     def get_dict(self):
-        return {key:value for key, value in zip(self.words, self.vecs)}
+        return {key:value for key, value in zip(self._words, self._vecs)}
 
     @property
     def words(self):
-        return self.words
+        return self._words
+
+    @words.setter
+    def words(self, words):
+        self._words = words
 
     @property
     def vecs(self):
-        return self.vecs
+        return self._vecs
+
+    @vecs.setter
+    def vecs(self, vecs):
+        self._vecs = vecs
 
     @property
     def index(self):
-        return self.index
+        return self._index
+
+    @index.setter
+    def index(self, index):
+        self._index = index
 
     def reindex(self):
-        self.index = {w: i for i, w in enumerate(self.words)}
-        self.n, self.d = self.vecs.shape
-        assert self.n == len(self.words) == len(self.index)
+        self._index = {w: i for i, w in enumerate(self._words)}
+        self.n, self.d = self._vecs.shape
+        assert self.n == len(self._words) == len(self._index)
         self._neighbors = None
         print(self.n, "words of dimension", self.d, ":", ", ".join(
-            self.words[:4] + ["..."] + self.words[-4:]))
+            self._words[:4] + ["..."] + self._words[-4:]))
 
     def v(self, word):
-        return self.vecs[self.index[word]]
+        return self._vecs[self._index[word]]
 
     def diff(self, word1, word2):
-        v = self.vecs[self.index[word1]] - self.vecs[self.index[word2]]
+        v = self._vecs[self._index[word1]] - self._vecs[self._index[word2]]
         return v/np.linalg.norm(v)
 
     def normalize(self):
         self.desc += ", normalize"
-        self.vecs /= np.linalg.norm(self.vecs, axis=1)[:, np.newaxis]
+        self._vecs /= np.linalg.norm(self._vecs, axis=1)[:, np.newaxis]
         self.reindex()
 
     def shrink(self, numwords):
         self.desc += ", shrink " + str(numwords)
-        self.filter_words(lambda w: self.index[w]<numwords)
+        self.filter_words(lambda w: self._index[w]<numwords)
 
     def filter_words(self, test):
         """
@@ -161,23 +173,23 @@ class WordEmbedding:
         """
         self.desc += ", filter"
         kept_indices, words = zip(*[[i, w] for i, w
-            in enumerate(self.words) if test(w)])
-        self.words = list(words)
-        self.vecs = self.vecs[kept_indices, :]
+            in enumerate(self._words) if test(w)])
+        self._words = list(words)
+        self._vecs = self._vecs[kept_indices, :]
         self.reindex()
 
     def save(self, filename):
         with open(filename, "w", encoding="utf8") as f:
             f.write("\n".join([w+" " + " ".join([str(x) for x in v]) for w, v
-                in zip(self.words, self.vecs)]))
+                in zip(self._words, self._vecs)]))
         print("Wrote", self.n, "words to", filename)
 
     def save_w2v(self, filename, binary=True):
         with open(filename, 'wb', encoding="utf8") as fout:
-            fout.write(to_utf8("%s %s\n" % self.vecs.shape))
+            fout.write(to_utf8("%s %s\n" % self._vecs.shape))
             # store in sorted order: most frequent words at the top
-            for i, word in enumerate(self.words):
-                row = self.vecs[i]
+            for i, word in enumerate(self._words):
+                row = self._vecs[i]
                 if binary:
                     fout.write(to_utf8(word) + b" " + row.tostring())
                 else:
@@ -195,7 +207,7 @@ class WordEmbedding:
                 w1, w2 = direction
                 v = self.diff(w1, w2)
                 self.desc += w1 + "-" + w2
-            self.vecs = self.vecs - self.vecs.dot(v)[:, None].dot(v[None, :])
+            self._vecs = self._vecs - self._vecs.dot(v)[:, None].dot(v[None, :])
         self.normalize()
 
     def compute_neighbors_if_necessary(self, thresh, max_words):
@@ -206,7 +218,7 @@ class WordEmbedding:
         print("Computing neighbors")
         self.thresh = thresh
         self.max_words = max_words
-        vecs = self.vecs[:max_words]
+        vecs = self._vecs[:max_words]
         dots = vecs.dot(vecs.T)
         dots = scipy.sparse.csr_matrix(dots * (dots >= 1-thresh/2))
         from collections import Counter
@@ -221,22 +233,22 @@ class WordEmbedding:
         print(self._neighbors[2].shape)
 
     def neighbors(self, word, thresh=1):
-        dots = self.vecs.dot(self.v(word))
-        return [self.words[i] for i, dot in enumerate(dots)
+        dots = self._vecs.dot(self.v(word))
+        return [self._words[i] for i, dot in enumerate(dots)
             if dot >= 1-thresh/2]
 
     def more_words_like_these(self, words, topn=50, max_freq=100000):
         v = sum(self.v(w) for w in words)
-        dots = self.vecs[:max_freq].dot(v)
+        dots = self._vecs[:max_freq].dot(v)
         thresh = sorted(dots)[-topn]
-        words = [w for w, dot in zip(self.words, dots) if dot>=thresh]
+        words = [w for w, dot in zip(self._words, dots) if dot>=thresh]
         return sorted(words, key=lambda w: self.v(w).dot(v))[-topn:][::-1]
 
     def best_analogies_dist_thresh(self, v, thresh=1, topn=500,
         max_words=50000):
         """Metric is cos(a-c, b-d) if |b-d|^2 < thresh, otherwise 0
         """
-        vecs, vocab = self.vecs[:max_words], self.words[:max_words]
+        vecs, vocab = self._vecs[:max_words], self._words[:max_words]
         self.compute_neighbors_if_necessary(thresh, max_words)
         rows, cols, vecs = self._neighbors
         scores = vecs.dot(v/np.linalg.norm(v))
@@ -262,7 +274,7 @@ class WordEmbedding:
 
     def profession_stereotypes(self, profession_words, bias_space, print_firstn=20):
         # Calculate the projection values onto the bias subspace
-        sp = sorted([(self.v(w).dot(bias_space), w) for w in profession_words if w in self.words])
+        sp = sorted([(self.v(w).dot(bias_space), w) for w in profession_words if w in self._words])
         # Check what genders belong to positive/negative projection values
         pos_neg = ("Female", "Male") if self.v("she").dot(bias_space) > 0 else ("Male", "Female")
         # Print the professions with scores
