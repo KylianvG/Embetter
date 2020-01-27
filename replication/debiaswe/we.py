@@ -2,7 +2,8 @@
 Tools for debiasing word embeddings.
 Extended from the code from:
 
-Man is to Computer Programmer as Woman is to Homemaker? Debiasing Word Embeddings
+Man is to Computer Programmer as Woman is to Homemaker?
+    Debiasing Word Embeddings
 Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai
 2016
 """
@@ -72,7 +73,7 @@ class WordEmbedding:
             # If valid file available, load from that file
             from_file = True
             fname = embedding
-            print(f"Creating embedding from file: {os.path.abspath(embedding)}")
+            print(f"Creating embedding from: {os.path.abspath(embedding)}")
 
         # Load binary files using gensim
         if fname.endswith(".bin"):
@@ -81,7 +82,8 @@ class WordEmbedding:
                 binary=True, limit=limit)
             self._words = sorted([w for w in model.vocab],
                 key=lambda w: model.vocab[w].index)
-            self._vecs = np.array([model[w] for w in self._words], dtype='float32')
+            self._vecs = np.array([model[w] for w in self._words],
+                dtype='float32')
         # Load non binary files by reading line by line
         else:
             vecs = []
@@ -272,18 +274,21 @@ class WordEmbedding:
 
         return ans
 
-    def profession_stereotypes(self, profession_words, bias_space, print_firstn=20):
+    def profession_stereotypes(self, profession_words, bias_space,
+        print_firstn=20):
         # Calculate the projection values onto the bias subspace
-        sp = sorted([(self.v(w).dot(bias_space), w) for w in profession_words if w in self._words])
+        sp = sorted([(self.v(w).dot(bias_space), w) for w in profession_words
+            if w in self._words])
         # Check what genders belong to positive/negative projection values
-        pos_neg = ("Female", "Male") if self.v("she").dot(bias_space) > 0 else ("Male", "Female")
+        pos_neg = ("Female", "Male") if self.v("she").dot(bias_space) > 0 \
+            else ("Male", "Female")
         # Print the professions with scores
         print(pos_neg[0].center(38) + "|" + pos_neg[1].center(38))
         print("-"*77)
         for i in range(min(print_firstn, len(sp))):
             print(str(sp[-(i+1)][0].round(3)).ljust(8) # score negative
-                + sp[-(i+1)][1].rjust(29) + " | "       # profession negative
-                + sp[i][1].ljust(29)                    # score positive
+                + sp[-(i+1)][1].rjust(29) + " | "      # profession negative
+                + sp[i][1].ljust(29)                   # score positive
                 + str(sp[i][0].round(3)).rjust(8))     # profession positive
         return sp
 
