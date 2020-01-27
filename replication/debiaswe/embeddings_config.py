@@ -24,12 +24,13 @@ ID = {
     },
     # 300d embeddings trained on Google News, 26423 words, hard debiased
     "word2vec_small_hard_debiased" : {
-        "id" : "0",
+        "id" : "1B2DN7I-QVHi67qf04GG2bq5qnOAI0vVN",
         "extension" : ".txt"
     },
     # 300d embeddings trained on Google News, 26423 words, soft debiased
+    # Params: epochs=2000, lr=0.01, gamma=0.1, decrease_times=[1000,1500,1800]
     "word2vec_small_soft_debiased" : {
-        "id" : "0",
+        "id" : "1JXHYPFRmpNvvYXvH7wUMYv5qhrgT-9-9",
         "extension" : ".txt"
     },
 
@@ -41,12 +42,13 @@ ID = {
     },
     # 300d embeddings, 42982 words, hard debiased
     "glove_small_hard_debiased" : {
-        "id" : "0",
+        "id" : "1mPVF3NXfNCRt3QrJ8ovti1GNKbQ-d06Z",
         "extension" : ".txt"
     },
     # 300d embeddings, 42982 words, soft debiased
+    # Params: epochs=3500, lr=0.01, gamma=0.1, decrease_times=[2300,2800,3000]
     "glove_small_soft_debiased" : {
-        "id" : "0",
+        "id" : "1oqVcOpMskmbNG-Sh2iQamDf49Zk7yf1t",
         "extension" : ".txt"
     },
 
@@ -63,12 +65,13 @@ ID = {
     },
     # 768d embeddings, 27014 words, hard debiased
     "fasttext_small_hard_debiased" : {
-        "id" : "0",
+        "id" : "1RNaUBYLRb99LZUA4LxoenkEMPNBfC4Hl",
         "extension" : ".txt"
     },
     # 768d embeddings, 27014 words, soft debiased
+    # Params: epochs=7000, lr=0.01, gamma=0.1, decrease_times=[5000],
     "fasttext_small_soft_debiased" : {
-        "id" : "0",
+        "id" : "1UwRmovvv_FNClZ6jArZZ2U3_6WOR0zHx",
         "extension" : ".txt"
     }
 }

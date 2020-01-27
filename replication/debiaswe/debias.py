@@ -78,6 +78,7 @@ def soft_debias(E, gender_specific_words, defs, lamb=0.2,
     neutrals = list(set(E.words) - set(gender_specific_words))
     neutrals = torch.tensor([E.vecs[E.index[w]] for w in neutrals]).t()
     gender_direction = torch.tensor([we.doPCA(defs, E).components_[0]]).t()
+
     l = lamb # lambda
     u, s, _ = torch.svd(W)
     s = torch.diag(s)
