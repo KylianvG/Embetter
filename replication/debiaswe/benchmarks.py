@@ -34,6 +34,7 @@ from collections import defaultdict
 from scipy import linalg, mat, dot, stats
 from .data import load_professions, load_definitional_pairs
 from .we import doPCA
+from debiaswe.logprogress import log_progress
 PKG_DIR = os.path.dirname( os.path.abspath( __file__ ))
 
 class Benchmark:
@@ -145,8 +146,8 @@ class Benchmark:
         # Batch the queries up
         y = []
         n_batches = len(analogy_answers) // batch_size
-        for i, batch in enumerate(np.array_split(filtered_questions,
-            n_batches)):
+        for i, batch in enumerate(log_progress(np.array_split(filtered_questions,
+            n_batches))):
             # print("Processing batch", i+1, "of", n_batches)
             # Extract relevant embeddings from E
             a = E.vecs[np.vectorize(E.index.__getitem__)(batch[:,0])]
@@ -155,15 +156,15 @@ class Benchmark:
             all_y = E.vecs
 
             # Calculate scores
-            batch_pos = ((1+all_y@x.T)/2)*((1+all_y@b.T)/2)
-            batch_neg = (1+all_y@a.T+0.00000001)/2
-            batch_scores = batch_pos/batch_neg
+            batch_pos = ((1 + all_y @ x.T) / 2) * ((1 + all_y @ b.T) / 2)
+            batch_neg = (1 + all_y @ a.T + 0.00000001) / 2
+            batch_scores = batch_pos / batch_neg
 
             # If set, set scores of query words to 0
             if discount_query_words:
                 query_ind = np.vectorize(E.index.__getitem__)(batch).T
                 batch_scores[query_ind, np.arange(
-                    batch_scores.shape[1])[None,:]] = 0
+                    batch_scores.shape[1])[None, :]] = 0
 
 
             # Retrieve words with best analogy scores
@@ -171,7 +172,7 @@ class Benchmark:
 
         # Calculate returnable metrics
         y = np.hstack(y)[:,None]
-        accuracy = np.mean(y==filtered_answers)*100
+        accuracy = np.mean(y == filtered_answers) * 100
         words_not_found = len(analogy_answers) - len(filtered_answers)
 
         return accuracy, len(filtered_answers), words_not_found
@@ -218,7 +219,7 @@ class Benchmark:
         num = np.mean(x_assoc, axis=-1) - np.mean(y_assoc, axis=-1)
         denom = np.std(np.concatenate((x_assoc, y_assoc), axis=0))
 
-        return num/denom
+        return num / denom
 
     @staticmethod
     def balance_word_vectors(A, B):
