@@ -15,8 +15,8 @@ import os
 import numpy as np
 import scipy.sparse
 from sklearn.decomposition import PCA
-from debiaswe.download import download
-from debiaswe.embeddings_config import ID
+from .download import download
+from .embeddings_config import ID
 if sys.version_info[0] < 3:
     import io
     open = io.open
