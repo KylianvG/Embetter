@@ -35,7 +35,11 @@ ID = {
     },
 
     ########## GloVe ##########
-    # 300d embeddings, 42982 words
+    # 300d embeddings, 1.9M words
+    "glove_large" : {
+        "id" : "0",
+        "extension" : ".txt"
+    },
     "glove_small" : {
         "id" : "1cZ5UG5LmjCM5vNczLHFnDb7zP7tgce0r",
         "extension" : ".txt"

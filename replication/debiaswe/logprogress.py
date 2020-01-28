@@ -1,7 +1,7 @@
 """
 Clear progress indicator for when running experiments in a notebook.
 
-Code from: https://github.com/kuk/log-progress
+Adapted code from: https://github.com/kuk/log-progress
 """
 
 def log_progress(sequence, every=None, size=None, name='Items'):
@@ -35,19 +35,10 @@ def log_progress(sequence, every=None, size=None, name='Items'):
     index = 0
     try:
         for index, record in enumerate(sequence, 1):
+            label.value = name
             if index == 1 or index % every == 0:
-                if is_iterator:
-                    label.value = '{name}: {index} / ?'.format(
-                        name=name,
-                        index=index
-                    )
-                else:
+                if not is_iterator:
                     progress.value = index
-                    label.value = u'{name}: {index} / {size}'.format(
-                        name=name,
-                        index=index,
-                        size=size
-                    )
             yield record
     except:
         progress.bar_style = 'danger'
@@ -55,7 +46,3 @@ def log_progress(sequence, every=None, size=None, name='Items'):
     else:
         progress.bar_style = 'success'
         progress.value = index
-        label.value = "{name}: {index}".format(
-            name=name,
-            index=str(index or '?')
-        )

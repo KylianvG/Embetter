@@ -16,6 +16,8 @@ TODO: Embedding descriptions (e.g. embedding dimensions, training data)
 
 import requests
 import os
+from progress.bar import Bar
+from debiaswe.logprogress import log_progress
 from .embeddings_config import ID
 import copy
 
@@ -54,7 +56,13 @@ def save_response_content(response, destination):
     CHUNK_SIZE = 32768
 
     with open(destination, "wb") as f:
-        print(len([1 for _ in copy.copy(response).iter_content(CHUNK_SIZE)]))
-        for chunk in response.iter_content(CHUNK_SIZE):
+        download_size = len([1 for _ in copy.copy(response).iter_content(CHUNK_SIZE)])
+        bar = Bar('Processing', max=download_size)
+        response = response.iter_content(CHUNK_SIZE)
+        for i in log_progress(range(download_size), name="Downloading..."):
+            chunk = next(response)
             if chunk: # filter out keep-alive new chunks
                 f.write(chunk)
+
+            bar.next()
+        bar.finish()
