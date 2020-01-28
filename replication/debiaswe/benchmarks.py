@@ -152,7 +152,7 @@ class Benchmark:
         bar = Bar('Processing', max=len(np.array_split(filtered_questions,
             n_batches)))
         for i, batch in enumerate(log_progress(np.array_split(filtered_questions,
-            n_batches))):
+            n_batches), name="Processing all batches...")):
             # print("Processing batch", i+1, "of", n_batches)
             # Extract relevant embeddings from E
             a = E.vecs[np.vectorize(E.index.__getitem__)(batch[:, 0])]
