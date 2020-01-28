@@ -73,10 +73,11 @@ class Benchmark:
         from prettytable import PrettyTable
         table = PrettyTable(["Score", "RG-65", "WS-35",
             "MSR", "WEAT"])
-        table.title = 'Results for {} dataset'.format(title)
+        table.title = 'Results for {}'.format(title)
         for result, method in zip(results, methods):
             table.add_row([method, list(result.values())[1][2],
-                list(result.values())[0][2], list(result.values())[2][2]])
+                list(result.values())[0][2], list(result.values())[2][2],
+                list(result.values())[3][2]])
         print(table)
 
     def evaluate(self, E, title, discount_query_words=False, batch_size=200,
@@ -194,7 +195,7 @@ class Benchmark:
         :returns: effect size
         """
         # Extract definitional word embeddings and determine gender direction.
-        defs = load_definitional_pairs()
+        defs = load_definitional_pairs(E.words)
         unzipped_defs = list(zip(*defs))
         female_defs = np.array(unzipped_defs[0])
         male_defs = np.array(unzipped_defs[1])
@@ -204,7 +205,7 @@ class Benchmark:
 
         # Extract professions and split according to projection on the gender
         # direction.
-        professions = load_professions()
+        professions = load_professions(embed_words=E.words)
         sp = sorted([(E.v(w).dot(v_gender), w) for w in professions])
         unzipped_sp = list(zip(*sp))
         prof_scores = np.array(unzipped_sp[0])

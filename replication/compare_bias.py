@@ -83,7 +83,7 @@ def project_profession_words(E, professions):
     v_gender = doPCA(defs, E).components_[0]
 
     # Projection on the gender direction.
-    sp = E.profession_stereotypes(professions, v_gender)
+    sp = E.profession_stereotypes(professions, v_gender, print_firstn=0)
 
     occupations = [s[1] for s in sp]
     return sp, occupations, v_gender

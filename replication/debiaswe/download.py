@@ -16,9 +16,9 @@ TODO: Embedding descriptions (e.g. embedding dimensions, training data)
 
 import requests
 import os
-from debiaswe.embeddings_config import ID
 from progress.bar import Bar
 from debiaswe.logprogress import log_progress
+from .embeddings_config import ID
 import copy
 
 
