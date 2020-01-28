@@ -34,6 +34,8 @@ from collections import defaultdict
 from scipy import linalg, mat, dot, stats
 from .data import load_professions, load_definitional_pairs
 from .we import doPCA
+from progress.bar import Bar
+from debiaswe.logprogress import log_progress
 PKG_DIR = os.path.dirname( os.path.abspath( __file__ ))
 
 class Benchmark:
@@ -48,11 +50,11 @@ class Benchmark:
                     for i, w in enumerate(line.strip().split())])
 
     @staticmethod
-    def cos(vec1,vec2):
-        return vec1.dot(vec2)/(linalg.norm(vec1)*linalg.norm(vec2))
+    def cos(vec1, vec2):
+        return vec1.dot(vec2) / (linalg.norm(vec1) * linalg.norm(vec2))
 
     @staticmethod
-    def rho(vec1,vec2):
+    def rho(vec1, vec2):
         return stats.stats.spearmanr(vec1, vec2)[0]
 
     @staticmethod
@@ -62,7 +64,7 @@ class Benchmark:
         table.title = 'Results for {}'.format(title)
         table.align["Dataset"] = "l"
         for k, v in result.items():
-            table.add_row([k,v[0],v[1],v[2]])
+            table.add_row([k, v[0], v[1], v[2]])
         print(table)
 
     @staticmethod
@@ -106,13 +108,14 @@ class Benchmark:
                     label.append(datum[2])
                 else:
                     notfound += 1
-            result[file_name] = [found, notfound, self.rho(label,pred)*100]
+            result[file_name] = [found, notfound, self.rho(label,pred) * 100]
         msr_res = self.MSR(E, discount_query_words, batch_size)
         result["MSR-analogy"] = [msr_res[1], msr_res[2], msr_res[0]]
         weat_res = self.weat(E)
         result["WEAT"] = ["-", "-", weat_res]
         if print:
             self.pprint(result, title)
+
         return result
 
     def MSR(self, E, discount_query_words=False, batch_size=200):
@@ -133,7 +136,7 @@ class Benchmark:
         analogy_answers = np.genfromtxt(
             self.DATA_ROOT + "/word_relationship.answers",
             dtype='str', encoding='utf-8')
-        analogy_a = np.expand_dims(analogy_answers[:,1], axis=1)
+        analogy_a = np.expand_dims(analogy_answers[:, 1], axis=1)
         analogy_q = np.genfromtxt(self.DATA_ROOT +
             "/word_relationship.questions", dtype='str', encoding='utf-8')
 
@@ -146,33 +149,37 @@ class Benchmark:
         # Batch the queries up
         y = []
         n_batches = len(analogy_answers) // batch_size
-        for i, batch in enumerate(np.array_split(filtered_questions,
-            n_batches)):
+        bar = Bar('Processing', max=len(np.array_split(filtered_questions,
+            n_batches)))
+        for i, batch in enumerate(log_progress(np.array_split(filtered_questions,
+            n_batches))):
             # print("Processing batch", i+1, "of", n_batches)
             # Extract relevant embeddings from E
-            a = E.vecs[np.vectorize(E.index.__getitem__)(batch[:,0])]
-            x = E.vecs[np.vectorize(E.index.__getitem__)(batch[:,1])]
-            b = E.vecs[np.vectorize(E.index.__getitem__)(batch[:,2])]
+            a = E.vecs[np.vectorize(E.index.__getitem__)(batch[:, 0])]
+            x = E.vecs[np.vectorize(E.index.__getitem__)(batch[:, 1])]
+            b = E.vecs[np.vectorize(E.index.__getitem__)(batch[:, 2])]
             all_y = E.vecs
 
             # Calculate scores
-            batch_pos = ((1+all_y@x.T)/2)*((1+all_y@b.T)/2)
-            batch_neg = (1+all_y@a.T+0.00000001)/2
-            batch_scores = batch_pos/batch_neg
+            batch_pos = ((1 + all_y @ x.T) / 2) * ((1 + all_y @ b.T) / 2)
+            batch_neg = (1 + all_y @ a.T + 0.00000001) / 2
+            batch_scores = batch_pos / batch_neg
 
             # If set, set scores of query words to 0
             if discount_query_words:
                 query_ind = np.vectorize(E.index.__getitem__)(batch).T
                 batch_scores[query_ind, np.arange(
-                    batch_scores.shape[1])[None,:]] = 0
+                    batch_scores.shape[1])[None, :]] = 0
 
 
             # Retrieve words with best analogy scores
             y.append(np.array(E.words)[np.argmax(batch_scores, axis=0)])
+            bar.next()
+        bar.finish()
 
         # Calculate returnable metrics
         y = np.hstack(y)[:,None]
-        accuracy = np.mean(y==filtered_answers)*100
+        accuracy = np.mean(y == filtered_answers) * 100
         words_not_found = len(analogy_answers) - len(filtered_answers)
 
         return accuracy, len(filtered_answers), words_not_found
@@ -203,8 +210,8 @@ class Benchmark:
         unzipped_sp = list(zip(*sp))
         prof_scores = np.array(unzipped_sp[0])
         sorted_profs = np.array(unzipped_sp[1])
-        female_prof = sorted_profs[prof_scores>0]
-        male_prof = sorted_profs[prof_scores<0]
+        female_prof = sorted_profs[prof_scores > 0]
+        male_prof = sorted_profs[prof_scores < 0]
 
         # Balance target sets and extract their embeddings.
         female_prof, male_prof = self.balance_word_vectors(female_prof,
@@ -221,7 +228,7 @@ class Benchmark:
         num = np.mean(x_assoc, axis=-1) - np.mean(y_assoc, axis=-1)
         denom = np.std(np.concatenate((x_assoc, y_assoc), axis=0))
 
-        return num/denom
+        return num / denom
 
     @staticmethod
     def balance_word_vectors(A, B):
