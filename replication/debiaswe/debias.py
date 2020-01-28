@@ -12,7 +12,8 @@ if sys.version_info[0] < 3:
 Hard-debias and soft-debias for word embeddings.
 Extended from the code from:
 
-Man is to Computer Programmer as Woman is to Homemaker? Debiasing Word Embeddings
+Man is to Computer Programmer as Woman is to Homemaker?
+    Debiasing Word Embeddings
 Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai
 2016
 """
@@ -115,42 +116,6 @@ def soft_debias(E, gender_specific_words, defs, lamb=0.2,
         print(f"Lowest loss: {best[1]}")
 
     debiased_embeds = transform.mm(W).t().numpy()
-    debiased_embeds = debiased_embeds / np.linalg.norm(debiased_embeds, axis=1)[:, None]
+    debiased_embeds = debiased_embeds / np.linalg.norm(debiased_embeds,
+        axis=1)[:, None]
     E.vecs = debiased_embeds
-
-
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("embedding_filename", help="The name of the embedding")
-    parser.add_argument("definitional_filename", help="JSON of definitional pairs")
-    parser.add_argument("gendered_words_filename", help="File containing words not to neutralize (one per line)")
-    parser.add_argument("equalize_filename", help="???.bin")
-    parser.add_argument("debiased_filename", help="???.bin")
-
-    args = parser.parse_args()
-    print(args)
-
-    with open(args.definitional_filename, "r") as f:
-        defs = json.load(f)
-    print("definitional", defs)
-
-    with open(args.equalize_filename, "r") as f:
-        equalize_pairs = json.load(f)
-
-    with open(args.gendered_words_filename, "r") as f:
-        gender_specific_words = json.load(f)
-    print("gender specific", len(gender_specific_words), gender_specific_words[:10])
-
-    E = we.WordEmbedding(args.embedding_filename)
-
-    print("Debiasing...")
-    debias(E, gender_specific_words, defs, equalize_pairs)
-
-    print("Saving to file...")
-    if args.embedding_filename[-4:] == args.debiased_filename[-4:] == ".bin":
-        E.save_w2v(args.debiased_filename)
-    else:
-        E.save(args.debiased_filename)
-
-    print("\n\nDone!\n")
