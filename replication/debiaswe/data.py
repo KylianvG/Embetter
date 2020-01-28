@@ -94,7 +94,7 @@ def load_definitional_pairs(embed_words=None):
     with open(def_file, 'r') as f:
         def_pairs = json.load(f)
 
-    # Filter unknown words if nescessary
+    # Filter unknown words if necessary
     if embed_words is not None:
         def_pairs = [p for p in def_pairs if p[0] in embed_words and p[1] in embed_words]
 
