@@ -4,6 +4,7 @@ Clear progress indicator for when running experiments in a notebook.
 Adapted code from: https://github.com/kuk/log-progress
 """
 
+
 def log_progress(sequence, every=None, size=None, name='Items'):
     from ipywidgets import IntProgress, HTML, VBox
     from IPython.display import display
@@ -40,7 +41,7 @@ def log_progress(sequence, every=None, size=None, name='Items'):
                 if not is_iterator:
                     progress.value = index
             yield record
-    except:
+    except Exception:
         progress.bar_style = 'danger'
         raise
     else:

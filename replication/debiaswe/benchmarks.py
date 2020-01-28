@@ -37,18 +37,21 @@ from progress.bar import Bar
 from .data import load_professions, load_definitional_pairs
 from .we import doPCA
 from .logprogress import log_progress
-PKG_DIR = os.path.dirname( os.path.abspath( __file__ ))
+PKG_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 class Benchmark:
     def __init__(self):
         self.DATA_ROOT = os.path.join(PKG_DIR, "benchmark_data")
-        self.files = [file_name.replace(".txt","") for file_name
-            in os.listdir(self.DATA_ROOT) if ".txt" in file_name]
-        self.dataset=defaultdict(list)
+        self.files = [
+            file_name.replace(".txt", "") for file_name in os.listdir(
+                self.DATA_ROOT) if ".txt" in file_name]
+        self.dataset = defaultdict(list)
         for file_name in self.files:
             for line in open(self.DATA_ROOT + "/" + file_name + ".txt"):
-                self.dataset[file_name].append([ float(w) if i == 2 else w
-                    for i, w in enumerate(line.strip().split())])
+                self.dataset[file_name].append([
+                    float(w) if i == 2 else w for i, w in enumerate(
+                        line.strip().split())])
 
     @staticmethod
     def cos(vec1, vec2):
@@ -109,17 +112,18 @@ class Benchmark:
         """
         assert len(results) == len(methods)
         from prettytable import PrettyTable
-        table = PrettyTable(["Score", "RG-65", "WS-35",
-            "MSR", "WEAT"])
+        table = PrettyTable(["Score", "RG-65", "WS-35", "MSR", "WEAT"])
         table.title = 'Results for {}'.format(title)
         for result, method in zip(results, methods):
-            table.add_row([method, list(result.values())[1][2],
-                list(result.values())[0][2], list(result.values())[2][2],
-                list(result.values())[3][2]])
+            table.add_row(
+                [method, list(result.values())[1][2],
+                    list(result.values())[0][2], list(result.values())[2][2],
+                    list(result.values())[3][2]])
         print(table)
 
-    def evaluate(self, E, title, discount_query_words=False, batch_size=200,
-        print=True):
+    def evaluate(
+            self, E, title, discount_query_words=False, batch_size=200,
+            print=True):
         """
         Evaluates RG-65, WS-353, MSR, and WEAT benchmarks
 
@@ -137,16 +141,16 @@ class Benchmark:
         result = {}
         vocab = word_dict.keys()
         for file_name, data in self.dataset.items():
-            pred, label, found, notfound = [] ,[], 0, 0
+            pred, label, found, notfound = [], [], 0, 0
             for datum in data:
                 if datum[0] in vocab and datum[1] in vocab:
                     found += 1
-                    pred.append(self.cos(word_dict[datum[0]],
-                        word_dict[datum[1]]))
+                    pred.append(self.cos(
+                        word_dict[datum[0]], word_dict[datum[1]]))
                     label.append(datum[2])
                 else:
                     notfound += 1
-            result[file_name] = [found, notfound, self.rho(label,pred) * 100]
+            result[file_name] = [found, notfound, self.rho(label, pred) * 100]
         msr_res = self.MSR(E, discount_query_words, batch_size)
         result["MSR-analogy"] = [msr_res[1], msr_res[2], msr_res[0]]
         weat_res = self.weat(E)
@@ -161,7 +165,7 @@ class Benchmark:
         Executes MSR-analogy benchmark on the word embeddings in E
 
 
-        :param object E: WordEmbedding object.
+        :param WordEmbedding E: WordEmbedding object containing embeddings.
         :param boolean discount_query_words: Give analogy solutions that appear
             in the query 0 score. (Default = False)
         :param int batch_size: Size of the batches in which to process
@@ -175,8 +179,9 @@ class Benchmark:
             self.DATA_ROOT + "/word_relationship.answers",
             dtype='str', encoding='utf-8')
         analogy_a = np.expand_dims(analogy_answers[:, 1], axis=1)
-        analogy_q = np.genfromtxt(self.DATA_ROOT +
-            "/word_relationship.questions", dtype='str', encoding='utf-8')
+        analogy_q = np.genfromtxt(
+            self.DATA_ROOT + "/word_relationship.questions",
+            dtype='str', encoding='utf-8')
 
         # Remove Out Of Vocabulary words_not_found
         analogy_stack = np.hstack((analogy_a, analogy_q))
@@ -187,10 +192,11 @@ class Benchmark:
         # Batch the queries up
         y = []
         n_batches = len(analogy_answers) // batch_size
-        bar = Bar('Processing', max=len(np.array_split(filtered_questions,
-            n_batches)))
+        bar = Bar('Processing', max=len(np.array_split(
+            filtered_questions, n_batches)))
         for i, batch in enumerate(log_progress(np.array_split(
-            filtered_questions, n_batches), name="Processing all batches...")):
+                filtered_questions, n_batches),
+                name="Processing all batches...")):
             # print("Processing batch", i+1, "of", n_batches)
             # Extract relevant embeddings from E
             a = E.vecs[np.vectorize(E.index.__getitem__)(batch[:, 0])]
@@ -209,14 +215,13 @@ class Benchmark:
                 batch_scores[query_ind, np.arange(
                     batch_scores.shape[1])[None, :]] = 0
 
-
             # Retrieve words with best analogy scores
             y.append(np.array(E.words)[np.argmax(batch_scores, axis=0)])
             bar.next()
         bar.finish()
 
         # Calculate returnable metrics
-        y = np.hstack(y)[:,None]
+        y = np.hstack(y)[:, None]
         accuracy = np.mean(y == filtered_answers) * 100
         words_not_found = len(analogy_answers) - len(filtered_answers)
 
@@ -225,11 +230,11 @@ class Benchmark:
     def weat(self, E):
         """
         Calculated WEAT effect size of association between female and male
-            words as attributes and typically female and male professions as
-            target words. Score is [-2,2], where closer to 0 is less biased.
+        words as attributes and typically female and male professions as
+        target words. Score is [-2,2], where closer to 0 is less biased.
 
 
-        :param object E: WordEmbedding object.
+        :param WordEmbedding E: WordEmbedding object containing embeddings.
         :returns: effect size
         """
         # Extract definitional word embeddings and determine gender direction.
@@ -252,12 +257,11 @@ class Benchmark:
         male_prof = sorted_profs[prof_scores < 0]
 
         # Balance target sets and extract their embeddings.
-        female_prof, male_prof = self.balance_word_vectors(female_prof,
-            male_prof)
+        female_prof, male_prof = self.balance_word_vectors(
+            female_prof, male_prof)
 
         X = E.vecs[np.vectorize(E.index.__getitem__)(np.array(female_prof))]
         Y = E.vecs[np.vectorize(E.index.__getitem__)(np.array(male_prof))]
-
 
         # Calculate effect size
         x_assoc = np.mean((X @ A.T), axis=-1) - np.mean((X @ B.T), axis=-1)
