@@ -5,8 +5,8 @@ import numpy as np
 import argparse
 import sys
 from matplotlib import pyplot as plt
-from .data import load_professions, load_definitional_pairs
-from .we import doPCA
+from debiaswe.data import load_professions, load_definitional_pairs
+from debiaswe.we import doPCA
 if sys.version_info[0] < 3:
     import io
     open = io.open
@@ -46,15 +46,15 @@ def get_datapoints_embedding(E, v_gender, professions, unique_occupations):
 
 
     :param object E: WordEmbedding object.
-    :param object list projection: List with projection of profession words
+    :param list projection: List with projection of profession words
         onto gender axis of embedding.
     :param list unique_occupations: List of occupations present in all 
         embeddings to compare.
     :returns: datapoints list
     """
-
     # Extract datapoint per occupation and sort datapoints
-    sp = sorted([(E.v(w).dot(v_gender), w) for w in professions if w in unique_occupations])
+    sp = sorted([(E.v(w).dot(v_gender), w) for w in professions 
+        if w in unique_occupations])
     points = [s[0] for s in sp]
     words = [s[1] for s in sp]
     words_sorted_ind = sorted(range(len(words)), key=lambda k: words[k])
@@ -67,9 +67,10 @@ def project_profession_words(E, professions, unique_words):
     Get gender axis and project profession words onto this axis.
 
     :param object E: WordEmbedding object.
+    :param list professions: List of professions
     :param list unique_words: List of words present in all 
         embeddings to compare.
-    :returns: projection, profession words
+    :returns: projection, profession words, gender axis
     """
     # Extract definitional word embeddings and determine gender direction.
     defs = load_definitional_pairs()
@@ -93,8 +94,9 @@ def compare_occupational_bias(E_a, E_b, embedding_names, name):
 
     :param object E_a: WordEmbedding object.
     :param object E_b: WordEmbedding object.
-    :param object list embedding_names: List with strings of names of 
+    :param list embedding_names: List with strings of names of 
         embeddings. For example, ["word2vec", "GloVe"].
+    :param string name: string with name of file save
     :returns: None
     """
     unique_words = list(set(E_a.words).intersection(E_b.words))
