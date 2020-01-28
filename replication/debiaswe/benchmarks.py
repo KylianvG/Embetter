@@ -32,10 +32,11 @@ import json
 import numpy as np
 from collections import defaultdict
 from scipy import linalg, mat, dot, stats
+from progress.bar import Bar
+
 from .data import load_professions, load_definitional_pairs
 from .we import doPCA
-from progress.bar import Bar
-from debiaswe.logprogress import log_progress
+from .logprogress import log_progress
 PKG_DIR = os.path.dirname( os.path.abspath( __file__ ))
 
 class Benchmark:
@@ -51,14 +52,40 @@ class Benchmark:
 
     @staticmethod
     def cos(vec1, vec2):
+        """
+        Calculates cosine similarity between two NumPy vectors
+
+
+        :param ndarray vec1: NumPy vector 1
+        :param ndarray vec2: NumPy vector 2
+        :returns: cosine similarity
+        """
         return vec1.dot(vec2) / (linalg.norm(vec1) * linalg.norm(vec2))
 
     @staticmethod
     def rho(vec1, vec2):
+        """
+        Calculates Spearman Rho between two NumPy vectors
+
+
+        :param ndarray vec1: NumPy vector 1
+        :param ndarray vec2: NumPy vector 2
+        :returns: Rho
+        """
         return stats.stats.spearmanr(vec1, vec2)[0]
 
     @staticmethod
     def pprint(result, title):
+        """
+        Plots benchmark results
+
+
+        :param dictionary result: Dictionary with benchmark names as keys and
+            lists containing [number of found words, number of missing words,
+            benchmark result] as values.
+        :param string title: Title of the table.
+        :returns: None
+        """
         from prettytable import PrettyTable
         table = PrettyTable(["Dataset", "Found", "Not Found", "Score"])
         table.title = 'Results for {}'.format(title)
@@ -69,6 +96,17 @@ class Benchmark:
 
     @staticmethod
     def pprint_compare(results, methods, title):
+        """
+        Plots benchmark results for all methods in one table to compare.
+
+
+        :param list result: List of dictionaries with benchmark names as keys
+            and lists containing [number of found words, number of missing
+            words, benchmark result] as values.
+        :param list methods: List of method names.
+        :param string title: Title of the table.
+        :returns: None
+        """
         assert len(results) == len(methods)
         from prettytable import PrettyTable
         table = PrettyTable(["Score", "RG-65", "WS-35",
@@ -127,7 +165,7 @@ class Benchmark:
         :param boolean discount_query_words: Give analogy solutions that appear
             in the query 0 score. (Default = False)
         :param int batch_size: Size of the batches in which to process
-            the queries.
+            the queries. (Default = 200)
         :returns: Percentage of correct analogies (accuracy),
             number of queries without OOV words,
             number of queries with OOV words
@@ -151,8 +189,8 @@ class Benchmark:
         n_batches = len(analogy_answers) // batch_size
         bar = Bar('Processing', max=len(np.array_split(filtered_questions,
             n_batches)))
-        for i, batch in enumerate(log_progress(np.array_split(filtered_questions,
-            n_batches))):
+        for i, batch in enumerate(log_progress(np.array_split(
+            filtered_questions, n_batches))):
             # print("Processing batch", i+1, "of", n_batches)
             # Extract relevant embeddings from E
             a = E.vecs[np.vectorize(E.index.__getitem__)(batch[:, 0])]

@@ -24,21 +24,17 @@ else:
     unicode = str
 
 
-def dedup(seq):
-    seen = set()
-    return [x for x in seq if not (x in seen or seen.add(x))]
-
-
-def safe_word(w):
-    # ignore words with numbers, etc.
-    # [a-zA-Z\.'_\- :;\(\)\]] for emoticons
-    return (re.match(r"^[a-z_]*$", w) and len(w) < 20
-        and not re.match(r"^_*$", w))
-
-
 def to_utf8(text, errors='strict', encoding='utf8'):
     """Convert a string (unicode or bytestring in `encoding`),
-        to bytestring in utf8."""
+        to bytestring in utf8.
+
+
+        :param string text: Text to convert to utf-8.
+        :param string errors: Error handeling type for unicode().
+            (Default = 'strict')
+        :param string encoding: encoding type for unicode().
+        :returns: Converted string
+    """
     if isinstance(text, unicode):
         return text.encode('utf8')
     # do bytestring -> unicode -> utf8 full circle, to ensure valid utf8
@@ -119,33 +115,85 @@ class WordEmbedding:
         print("Embedding shape:", self._vecs.shape)
 
     def get_dict(self):
+        """
+        Converts the saved words and their embeddings to dictionary format.
+
+
+        :returns: Dictionary with words as keys and embeddings as values
+        """
         return {key:value for key, value in zip(self._words, self._vecs)}
 
     @property
     def words(self):
+        """
+        Retrieve the words from the embeddings
+
+
+        :returns: List of words
+        """
         return self._words
 
     @words.setter
     def words(self, words):
+        """
+        Set the words of the embeddings.
+
+
+        :param list words: List of words.
+        :returns: None
+        """
         self._words = words
 
     @property
     def vecs(self):
+        """
+        Retrieve the embeddings
+
+
+        :returns: ndarray of embeddings
+        """
         return self._vecs
 
     @vecs.setter
     def vecs(self, vecs):
+        """
+        Set the embeddings.
+
+
+        :param ndarray vecs: NumPy array of embeddings
+        :returns: None
+        """
         self._vecs = vecs
 
     @property
     def index(self):
+        """
+        Retrieve the indices of the words' embeddings
+
+
+        :returns: Dictionary with words as keys and the indices of their embeddings
+            as values
+        """
         return self._index
 
     @index.setter
     def index(self, index):
+        """
+        Set the indices.
+
+
+        :param dictionary index: Dictionary of words:indices.
+        :returns: None
+        """
         self._index = index
 
     def reindex(self):
+        """
+        Generate dictionary of indices and check consistency in size.
+
+
+        :returns: None
+        """
         self._index = {w: i for i, w in enumerate(self._words)}
         self.n, self.d = self._vecs.shape
         assert self.n == len(self._words) == len(self._index)
@@ -154,6 +202,13 @@ class WordEmbedding:
             self._words[:4] + ["..."] + self._words[-4:]))
 
     def v(self, word):
+        """
+        Retrieve the embedding vector of a word.
+
+
+        :param string word: Word to retrieve the embedding of.
+        :returns: ndarray with the embedding
+        """
         return self._vecs[self._index[word]]
 
     def diff(self, word1, word2):
@@ -186,7 +241,7 @@ class WordEmbedding:
                 in zip(self._words, self._vecs)]))
         print("Wrote", self.n, "words to", filename)
 
-    def save_w2v(self, filename, binary=True):
+    def save_embeddings(self, filename, binary=True):
         with open(filename, 'wb', encoding="utf8") as fout:
             fout.write(to_utf8("%s %s\n" % self._vecs.shape))
             # store in sorted order: most frequent words at the top
