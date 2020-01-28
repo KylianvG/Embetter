@@ -58,8 +58,9 @@ def save_response_content(response, destination):
     with open(destination, "wb") as f:
         download_size = len([1 for _ in copy.copy(response).iter_content(CHUNK_SIZE)])
         bar = Bar('Processing', max=download_size)
-        for i in log_progress(range(download_size)):
-            chunk = next(response.iter_content(CHUNK_SIZE))
+        response = response.iter_content(CHUNK_SIZE)
+        for i in log_progress(range(download_size), name="Downloading..."):
+            chunk = next(response)
             if chunk: # filter out keep-alive new chunks
                 f.write(chunk)
 
