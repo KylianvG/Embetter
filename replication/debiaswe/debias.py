@@ -1,9 +1,5 @@
 from __future__ import print_function, division
-<<<<<<< HEAD
 from .we import *
-=======
-import .we
->>>>>>> 30cf8db72e913349fabfdb9b86f70e41864a90cb
 import json
 import numpy as np
 import argparse
