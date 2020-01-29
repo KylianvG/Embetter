@@ -59,18 +59,22 @@ def main():
         v_gender = we.doPCA(defs, E).components_[0]
 
         # Bias without debiasing
-        show_bias(E, v_gender, profession_words, info="with bias")
+        if not FLAGS.no_show:
+            show_bias(E, v_gender, profession_words, info="with bias")
 
         # Hard debiasing
         E_hard = hard(E, gender_words, defs, equalize_pairs)
-        show_bias(E_hard, v_gender, profession_words, info="hard debiased")
+        if not FLAGS.no_show:
+            show_bias(E_hard, v_gender, profession_words, info="hard debiased")
 
         E_soft = None
         # Only do soft debiasing for small embeddings
         if embed.split("_")[-1] != "large":
             # Soft debiasing
             E_soft = soft(E, embed, gender_words, defs)
-            show_bias(E_soft, v_gender, profession_words, info="soft debiased")
+            if not FLAGS.no_show:
+                show_bias(E_soft, v_gender, profession_words,
+                    info="soft debiased")
 
         # Run the benchmarks if nescessary
         if not FLAGS.no_bench:
@@ -81,6 +85,8 @@ def print_details():
     """Prints parameter details about the script."""
     print("#"*18 + "EXPERIMENT DETAILS".center(20) + "#"*18)
     print("#" + "#".rjust(55))
+    print("# " + f"Analogies and occupations: {str(not FLAGS.no_show)}".ljust(
+        53) + "#")
     print("# " + f"Do soft debiasing from scratch: {str(FLAGS.do_soft)}".ljust(
         53) + "#")
     print("# " + f"Perform benchmarks: {str(not FLAGS.no_bench)}".ljust(
@@ -212,6 +218,11 @@ if __name__ == '__main__':
                 action='store_true',
                 help='If flag is set, does not perform the RG, WS, MSR and \
                     WEAT benchmarks.')
+    parser.add_argument(
+                '--no_show',
+                action='store_true',
+                help='If flag is set, does not show analogies and \
+                    occupational gender bias.')
 
     FLAGS, _ = parser.parse_known_args()
 
