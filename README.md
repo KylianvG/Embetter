@@ -3,6 +3,8 @@
 Using pre-trained word embeddings like w2v, GloVe or fastText? This code allows you to easily remove any societal bias.
 No longer can nurses only be female or are males the only cowards.
 
+This repository is used for the FACT-AI course, where we replicate the experiments of a paper from the FACT field.
+
 ## Getting Started
 
 Here we'll outline how to access the code.
