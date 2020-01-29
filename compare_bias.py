@@ -9,7 +9,7 @@ Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai
 """
 
 from __future__ import print_function, division
-import debiaswe.we as we
+import embetter.we as we
 import json
 import numpy as np
 import argparse
