@@ -37,9 +37,10 @@ ID = {
     ########## GloVe ##########
     # 300d embeddings, 1.9M words
     "glove_large" : {
-        "id" : "0",
+        "id" : "1H1Ed1hZBQPymQ3O3yOltOG-Pi3eOy-Ac",
         "extension" : ".txt"
     },
+    # 300d embeddings, 42982 words
     "glove_small" : {
         "id" : "1cZ5UG5LmjCM5vNczLHFnDb7zP7tgce0r",
         "extension" : ".txt"
@@ -73,7 +74,7 @@ ID = {
         "extension" : ".txt"
     },
     # 768d embeddings, 27014 words, soft debiased
-    # Params: epochs=7000, lr=0.01, gamma=0.1, decrease_times=[5000],
+    # Params: epochs=7000, lr=0.01, gamma=0.1, decrease_times=[5000]
     "fasttext_small_soft_debiased" : {
         "id" : "1UwRmovvv_FNClZ6jArZZ2U3_6WOR0zHx",
         "extension" : ".txt"
