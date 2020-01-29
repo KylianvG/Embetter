@@ -1,5 +1,4 @@
-# EmBetter: FactAI Word Embedding Debiassing
-# Embetter: 
+# Embetter: FactAI Word Embedding Debiassing 
 
 Are you using pre-trained word embeddings like word2vec, GloVe or fastText? `Embetter` allows you to easily remove gender bias.
 No longer can nurses only be female or are males the only cowards.
