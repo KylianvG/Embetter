@@ -73,8 +73,8 @@ def main():
             # Soft debiasing
             E_soft = soft(E, embed, gender_words, defs)
             if not FLAGS.no_show:
-                show_bias(E_soft, v_gender, profession_words,
-                    info="soft debiased")
+                show_bias(
+                    E_soft, v_gender, profession_words, info="soft debiased")
 
         # Run the benchmarks if nescessary
         if not FLAGS.no_bench:
