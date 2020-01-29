@@ -85,17 +85,17 @@ This project is licensed under the MIT License - see the LICENSE.md file for det
 
 ## Acknowledgements
 
-This code is extended from the code from:
-
+The debiasing methods that we provide have been proposed by 
 > Man is to Computer Programmer as Woman is to Homemaker? Debiasing Word Embeddings \
 > Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai \
-> 2016
+> 2016 (https://arxiv.org/abs/1607.06520)
 
-Which is available at: \
-https://github.com/tolga-b/debiaswe
+and full credit for these methods goes to them.
 
-Incorporating other extentions from:
+The code that we provide is largely based on their code, which is available in their Github repository: \
+https://github.com/tolga-b/debiaswe.
 
+Additionally, some of the code borrows from:
 - https://github.com/k-kawakami/embedding-evaluation
 - https://github.com/chadaeun/weat_replication
 - https://stackoverflow.com/a/39225272
