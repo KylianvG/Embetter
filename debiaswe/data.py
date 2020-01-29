@@ -1,14 +1,15 @@
-import json
-import os
-
 """
 Tools for data operations.
 Extended from the code from:
 
-Man is to Computer Programmer as Woman is to Homemaker? Debiasing Word Embeddings
+Man is to Computer Programmer as Woman is to Homemaker?
+    Debiasing Word Embeddings
 Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai
 2016
 """
+
+import json
+import os
 PKG_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -16,15 +17,11 @@ def load_professions(load_scores=False, embed_words=None):
     """
     Loads professions from data file
 
+
     :param bool load_scores: Load bias scores if True. Defaults to False.
     :param list embed_words: Available embedding words.
     :returns: List of professions
     """
-    # print('Loaded professions\n' +
-          # 'Format:\n' +
-          # 'word,\n' +
-          # 'definitional female -1.0 -> definitional male 1.0\n' +
-          # 'stereotypical female -1.0 -> stereotypical male 1.0')
     assert embed_words is None or type(embed_words) == list
 
     professions_file = os.path.join(PKG_DIR, 'data', 'professions.json')
@@ -96,7 +93,9 @@ def load_definitional_pairs(embed_words=None):
 
     # Filter unknown words if necessary
     if embed_words is not None:
-        def_pairs = [p for p in def_pairs if p[0] in embed_words and p[1] in embed_words]
+        def_pairs = [
+            p for p in def_pairs if p[0] in embed_words and p[1] in embed_words
+            ]
 
     return def_pairs
 

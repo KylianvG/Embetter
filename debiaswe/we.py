@@ -24,21 +24,18 @@ else:
     unicode = str
 
 
-def dedup(seq):
-    seen = set()
-    return [x for x in seq if not (x in seen or seen.add(x))]
-
-
-def safe_word(w):
-    # ignore words with numbers, etc.
-    # [a-zA-Z\.'_\- :;\(\)\]] for emoticons
-    return (re.match(r"^[a-z_]*$", w) and len(w) < 20
-        and not re.match(r"^_*$", w))
-
-
 def to_utf8(text, errors='strict', encoding='utf8'):
-    """Convert a string (unicode or bytestring in `encoding`),
-        to bytestring in utf8."""
+    """
+    Convert a string (unicode or bytestring in `encoding`)
+    to bytestring in utf8.
+
+
+    :param string text: Text to convert to utf-8.
+    :param string errors: Error handeling type for unicode().
+        (Default = 'strict')
+    :param string encoding: encoding type for unicode().
+    :returns: Converted string
+    """
     if isinstance(text, unicode):
         return text.encode('utf8')
     # do bytestring -> unicode -> utf8 full circle, to ensure valid utf8
@@ -48,7 +45,7 @@ def to_utf8(text, errors='strict', encoding='utf8'):
 class WordEmbedding:
     def __init__(self, embedding, limit=None):
         self._words = []
-        self._vecs= None
+        self._vecs = None
         self._index = None
         self.thresh = None
         self.max_words = None
@@ -61,8 +58,9 @@ class WordEmbedding:
         # is needed.
         if embedding in ID.keys():
             extension = ID[embedding]["extension"]
-            fname = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                "embeddings", embedding + extension)
+            fname = os.path.join(os.path.dirname(
+                os.path.abspath(__file__)), "embeddings",
+                embedding + extension)
             # If embedding file not present, download it
             if not os.path.exists(fname):
                 download(embedding)
@@ -78,12 +76,12 @@ class WordEmbedding:
         # Load binary files using gensim
         if fname.endswith(".bin"):
             import gensim.models
-            model = gensim.models.KeyedVectors.load_word2vec_format(fname,
-                binary=True, limit=limit)
-            self._words = sorted([w for w in model.vocab],
-                key=lambda w: model.vocab[w].index)
-            self._vecs = np.array([model[w] for w in self._words],
-                dtype='float32')
+            model = gensim.models.KeyedVectors.load_word2vec_format(
+                fname, binary=True, limit=limit)
+            self._words = sorted(
+                [w for w in model.vocab], key=lambda w: model.vocab[w].index)
+            self._vecs = np.array(
+                [model[w] for w in self._words], dtype='float32')
         # Load non binary files by reading line by line
         else:
             vecs = []
@@ -114,38 +112,91 @@ class WordEmbedding:
         self.reindex()
         norms = np.linalg.norm(self._vecs, axis=1)
         if max(norms)-min(norms) > 0.0001:
-            if from_file: print("Normalizing vectors...")
+            if from_file:
+                print("Normalizing vectors...")
             self.normalize()
         print("Embedding shape:", self._vecs.shape)
 
     def get_dict(self):
-        return {key:value for key, value in zip(self._words, self._vecs)}
+        """
+        Converts the saved words and their embeddings to dictionary format.
+
+
+        :returns: Dictionary with words as keys and embeddings as values
+        """
+        return {key: value for key, value in zip(self._words, self._vecs)}
 
     @property
     def words(self):
+        """
+        Retrieve the words from the embeddings
+
+
+        :returns: List of words
+        """
         return self._words
 
     @words.setter
     def words(self, words):
+        """
+        Set the words of the embeddings.
+
+
+        :param list words: List of words.
+        :returns: None
+        """
         self._words = words
 
     @property
     def vecs(self):
+        """
+        Retrieve the embeddings
+
+
+        :returns: ndarray of embeddings
+        """
         return self._vecs
 
     @vecs.setter
     def vecs(self, vecs):
+        """
+        Set the embeddings.
+
+
+        :param ndarray vecs: NumPy array of embeddings
+        :returns: None
+        """
         self._vecs = vecs
 
     @property
     def index(self):
+        """
+        Retrieve the indices of the words' embeddings
+
+
+        :returns: Dictionary with words as keys and the indices of their
+            embeddings as values
+        """
         return self._index
 
     @index.setter
     def index(self, index):
+        """
+        Set the indices.
+
+
+        :param dictionary index: Dictionary of words:indices.
+        :returns: None
+        """
         self._index = index
 
     def reindex(self):
+        """
+        Generate dictionary of indices and check consistency in size.
+
+
+        :returns: None
+        """
         self._index = {w: i for i, w in enumerate(self._words)}
         self.n, self.d = self._vecs.shape
         assert self.n == len(self._words) == len(self._index)
@@ -154,39 +205,88 @@ class WordEmbedding:
             self._words[:4] + ["..."] + self._words[-4:]))
 
     def v(self, word):
+        """
+        Retrieve the embedding vector of a word.
+
+
+        :param string word: Word to retrieve the embedding of.
+        :returns: ndarray with the embedding
+        """
         return self._vecs[self._index[word]]
 
     def diff(self, word1, word2):
+        """
+        Calculate the normalized distance between the embeddings of two words.
+
+
+        :param string word1: First word of which to compare the embedding.
+        :param string word2: Second word of which to compare the embedding.
+        :returns: Normalized difference vector
+        """
         v = self._vecs[self._index[word1]] - self._vecs[self._index[word2]]
         return v/np.linalg.norm(v)
 
     def normalize(self):
+        """
+        Normalize all embedding vectors.
+
+
+        :returns: None
+        """
         self.desc += ", normalize"
         self._vecs /= np.linalg.norm(self._vecs, axis=1)[:, np.newaxis]
         self.reindex()
 
     def shrink(self, numwords):
+        """
+        Reduce the number of words and embeddings.
+
+
+        :param integer numwords: number of words and embeddings to retain.
+        :returns: None
+        """
         self.desc += ", shrink " + str(numwords)
-        self.filter_words(lambda w: self._index[w]<numwords)
+        self.filter_words(lambda w: self._index[w] < numwords)
 
     def filter_words(self, test):
         """
-        Keep some words based on test, e.g. lambda x: x.lower()==x
+        Keep some words based on test, e.g. lambda x: x.lower()==x.
+
+
+        :param lambda test: Lambda function detailing condition to keep a word.
+        :returns: None
         """
         self.desc += ", filter"
         kept_indices, words = zip(*[[i, w] for i, w
-            in enumerate(self._words) if test(w)])
+                                    in enumerate(self._words) if test(w)])
         self._words = list(words)
         self._vecs = self._vecs[kept_indices, :]
         self.reindex()
 
     def save(self, filename):
+        """
+        Save the words and embeddings to a file.
+
+
+        :param string filename: Location to save the embeddings to.
+        :returns: None
+        """
         with open(filename, "w", encoding="utf8") as f:
-            f.write("\n".join([w+" " + " ".join([str(x) for x in v]) for w, v
-                in zip(self._words, self._vecs)]))
+            f.write("\n".join([w+" " + " ".join(
+                [str(x) for x in v]) for w, v in zip(
+                    self._words, self._vecs)]))
         print("Wrote", self.n, "words to", filename)
 
-    def save_w2v(self, filename, binary=True):
+    def save_embeddings(self, filename, binary=True):
+        """
+        Save the words and embeddings to a file, sorted by words frequency
+            in descending order.
+
+
+        :param string filename: Location to save the embeddings to.
+        :param boolean binary: Save as a binary file. (Default = True)
+        :returns: None
+        """
         with open(filename, 'wb', encoding="utf8") as fout:
             fout.write(to_utf8("%s %s\n" % self._vecs.shape))
             # store in sorted order: most frequent words at the top
@@ -195,27 +295,21 @@ class WordEmbedding:
                 if binary:
                     fout.write(to_utf8(word) + b" " + row.tostring())
                 else:
-                    fout.write(to_utf8("%s %s\n" % (word, ' '.join("%f" % val
-                        for val in row))))
-
-    def remove_directions(self, directions): #directions better be orthogonal
-        self.desc += ", removed"
-        for direction in directions:
-            self.desc += " "
-            if type(direction) is np.ndarray:
-                v = direction / np.linalg.norm(direction)
-                self.desc += "vector "
-            else:
-                w1, w2 = direction
-                v = self.diff(w1, w2)
-                self.desc += w1 + "-" + w2
-            self._vecs = self._vecs - self._vecs.dot(v)[:, None].dot(v[None, :])
-        self.normalize()
+                    fout.write(to_utf8("%s %s\n" % (
+                        word, ' '.join("%f" % val for val in row))))
 
     def compute_neighbors_if_necessary(self, thresh, max_words):
-        thresh = float(thresh) # dang python 2.7!
+        """
+        Calculate which embeddings are close to each embedding.
+
+
+        :param float thresh: Threshold to determine when an embedding is close.
+        :param integer max_words: Maximum number of words to considder.
+        :returns: None
+        """
+        thresh = float(thresh)  # dang python 2.7!
         if (self._neighbors is not None and self.thresh == thresh
-            and self.max_words == max_words):
+                and self.max_words == max_words):
             return
         print("Computing neighbors")
         self.thresh = thresh
@@ -228,27 +322,27 @@ class WordEmbedding:
         nums = list(Counter(rows).values())
         print("Mean:", np.mean(nums)-1)
         print("Median:", np.median(nums)-1)
-        rows, cols, vecs = zip(*[(i, j, vecs[i]-vecs[j]) for i, j, x
-            in zip(rows, cols, dots.data) if i<j])
-        self._neighbors = rows, cols, np.array([v/np.linalg.norm(v)
-            for v in vecs])
+        rows, cols, vecs = zip(*[(i, j, vecs[i]-vecs[j]) for i, j, x in zip(
+            rows, cols, dots.data) if i < j])
+        self._neighbors = rows, cols, np.array(
+            [v/np.linalg.norm(v) for v in vecs])
         print(self._neighbors[2].shape)
 
-    def neighbors(self, word, thresh=1):
-        dots = self._vecs.dot(self.v(word))
-        return [self._words[i] for i, dot in enumerate(dots)
-            if dot >= 1-thresh/2]
+    def best_analogies_dist_thresh(
+            self, v, thresh=1, topn=500, max_words=50000):
+        """
+        Generate analogies based on the seed direction using the metric
+            'cos(a-c, b-d) if |b-d|^2 < thresh, otherwise 0'
+            to select neighbors.
 
-    def more_words_like_these(self, words, topn=50, max_freq=100000):
-        v = sum(self.v(w) for w in words)
-        dots = self._vecs[:max_freq].dot(v)
-        thresh = sorted(dots)[-topn]
-        words = [w for w, dot in zip(self._words, dots) if dot>=thresh]
-        return sorted(words, key=lambda w: self.v(w).dot(v))[-topn:][::-1]
 
-    def best_analogies_dist_thresh(self, v, thresh=1, topn=500,
-        max_words=50000):
-        """Metric is cos(a-c, b-d) if |b-d|^2 < thresh, otherwise 0
+        :param ndarray v: Seed direction along which the analogies are
+            generated
+        :param float thresh: Threshold to determine when an embedding is close.
+            (Default = 1)
+        :param integer topn: Number of analogies to print.
+        :param integer max_words: Maximum number of words to considder.
+        :returns: List of analogies
         """
         vecs, vocab = self._vecs[:max_words], self._words[:max_words]
         self.compute_neighbors_if_necessary(thresh, max_words)
@@ -260,7 +354,7 @@ class WordEmbedding:
         usedL = set()
         usedR = set()
         for i in pi:
-            if abs(scores[i])<0.001:
+            if abs(scores[i]) < 0.001:
                 break
             row = rows[i] if scores[i] > 0 else cols[i]
             col = cols[i] if scores[i] > 0 else rows[i]
@@ -269,16 +363,27 @@ class WordEmbedding:
             usedL.add(row)
             usedR.add(col)
             ans.append((vocab[row], vocab[col], abs(scores[i])))
-            if len(ans)==topn:
+            if len(ans) == topn:
                 break
 
         return ans
 
-    def profession_stereotypes(self, profession_words, bias_space,
-        print_firstn=20):
+    def profession_stereotypes(
+            self, profession_words, bias_space, print_firstn=20):
+        """
+        Print the most stereotypical professions on both ends of the bias
+            direction.
+
+
+        :param list profession_words: List of profession words to project.
+        :param ndarray bias_space: Direction on which the professions are
+            projected.
+        :param integer print_firstn: Number of professions to print.
+        :returns: Sorted list of projected professions
+        """
         # Calculate the projection values onto the bias subspace
-        sp = sorted([(self.v(w).dot(bias_space), w) for w in profession_words
-            if w in self._words])
+        sp = sorted([(self.v(w).dot(
+            bias_space), w) for w in profession_words if w in self._words])
         # Check what genders belong to positive/negative projection values
         pos_neg = ("Female", "Male") if self.v("she").dot(bias_space) > 0 \
             else ("Male", "Female")
@@ -286,62 +391,56 @@ class WordEmbedding:
         print(pos_neg[0].center(38) + "|" + pos_neg[1].center(38))
         print("-"*77)
         for i in range(min(print_firstn, len(sp))):
-            print(str(sp[-(i+1)][0].round(3)).ljust(8) # score negative
-                + sp[-(i+1)][1].rjust(29) + " | "      # profession negative
-                + sp[i][1].ljust(29)                   # score positive
-                + str(sp[i][0].round(3)).rjust(8))     # profession positive
+            print(str(sp[-(i+1)][0].round(3)).ljust(8)      # score neg
+                    + sp[-(i+1)][1].rjust(29) + " | "       # profession neg
+                    + sp[i][1].ljust(29)                    # score pos
+                    + str(sp[i][0].round(3)).rjust(8))  # profession pos
         return sp
 
 
 def viz(analogies):
-    print("\n".join(str(i).rjust(4)+a[0].rjust(29) + " | " + a[1].ljust(29) +
-        (str(a[2]))[:4] for i, a in enumerate(analogies)))
+    """
+    Print the analogies in a nicer format.
 
 
-def text_plot_words(xs, ys, words, width = 90, height = 40, filename=None):
-    PADDING = 10 # num chars on left and right in case words spill over
-    res = [[' ' for i in range(width)] for j in range(height)]
-    def rescale(nums):
-        a = min(nums)
-        b = max(nums)
-        return [(x-a)/(b-a) for x in nums]
-    print("x:", (min(xs), max(xs)), "y:",(min(ys),max(ys)))
-    xs = rescale(xs)
-    ys = rescale(ys)
-    for (x, y, word) in zip(xs, ys, words):
-        i = int(x*(width - 1 - PADDING))
-        j = int(y*(height-1))
-        row = res[j]
-        z = list(row[i2] != ' ' for i2 in range(max(i-1, 0),
-            min(width, i + len(word) + 1)))
-        if any(z):
-            continue
-        for k in range(len(word)):
-            if i+k>=width:
-                break
-            row[i+k] = word[k]
-    string = "\n".join("".join(r) for r in res)
-#     return string
-    if filename:
-        with open(filename, "w", encoding="utf8") as f:
-            f.write(string)
-        print("Wrote to", filename)
-    else:
-        print(string)
+    :param list analogies: List of analogies to print.
+    :returns: None
+    """
+    print("\n".join(str(i).rjust(4)+a[0].rjust(29) + " | " + a[1].ljust(29)
+                    + (str(a[2]))[:4] for i, a in enumerate(analogies)))
 
 
-def doPCA(pairs, embedding, num_components = 10):
+def doPCA(pairs, embedding, num_components=10):
+    """
+    Perform PCA on the centered embeddings of the words in the pairs.
+
+
+    :param list pairs: List of word pairs defining the gender space.
+    :param WordEmbedding embedding: WordEmbedding object containing embeddings.
+    :param integer num_components: Number of principal components.
+        (Default = 10)
+    :returns: pca object with principal components.
+    """
     matrix = []
     for a, b in pairs:
         center = (embedding.v(a) + embedding.v(b))/2
         matrix.append(embedding.v(a) - center)
         matrix.append(embedding.v(b) - center)
     matrix = np.array(matrix)
-    pca = PCA(n_components = num_components)
+    pca = PCA(n_components=num_components)
     pca.fit(matrix)
     # bar(range(num_components), pca.explained_variance_ratio_)
     return pca
 
 
 def drop(u, v):
+    """
+    Drop the bias subspace
+
+
+    :param ndarray u: NumPy array with an embedding from which to remove the
+        bias subspace.
+    :param ndarray v: NumPy array with bias subspace.
+    :returns: Debiased embeddings
+    """
     return u - v * (u.dot(v) / v.dot(v))

@@ -1,3 +1,13 @@
+"""
+Hard-debias and soft-debias for word embeddings.
+Extended from the code from:
+
+Man is to Computer Programmer as Woman is to Homemaker?
+    Debiasing Word Embeddings
+Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai
+2016
+"""
+
 from __future__ import print_function, division
 from . import we
 import json
@@ -8,15 +18,6 @@ import torch
 if sys.version_info[0] < 3:
     import io
     open = io.open
-"""
-Hard-debias and soft-debias for word embeddings.
-Extended from the code from:
-
-Man is to Computer Programmer as Woman is to Homemaker?
-    Debiasing Word Embeddings
-Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai
-2016
-"""
 
 
 def hard_debias(E, gender_specific_words, definitional, equalize):
@@ -52,9 +53,11 @@ def hard_debias(E, gender_specific_words, definitional, equalize):
             E.vecs[E.index[b]] = -z * gender_direction + y
     E.normalize()
 
-def soft_debias(E, gender_specific_words, defs, lamb=0.2,
+
+def soft_debias(
+        E, gender_specific_words, defs, lamb=0.2,
         log=True, print_every=100, epochs=2000, lr=0.01, gamma=0.1,
-        decrease_times=[1000,1500,1800]):
+        decrease_times=[1000, 1500, 1800]):
     """
     Soft debiases word embeddings.
 
@@ -80,7 +83,7 @@ def soft_debias(E, gender_specific_words, defs, lamb=0.2,
     neutrals = torch.tensor([E.vecs[E.index[w]] for w in neutrals]).t()
     gender_direction = torch.tensor([we.doPCA(defs, E).components_[0]]).t()
 
-    l = lamb # lambda
+    L = lamb  # lambda
     u, s, _ = torch.svd(W)
     s = torch.diag(s)
 
@@ -91,16 +94,16 @@ def soft_debias(E, gender_specific_words, defs, lamb=0.2,
     transform = torch.randn(dim, dim, requires_grad=True)
     epochs = epochs
     optimizer = torch.optim.Adam([transform], lr=lr)
-    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer,
-        milestones=decrease_times, gamma=gamma)
-    best = (None, float("inf")) # (best transform, lowest loss)
+    scheduler = torch.optim.lr_scheduler.MultiStepLR(
+        optimizer, milestones=decrease_times, gamma=gamma)
+    best = (None, float("inf"))  # (best transform, lowest loss)
 
     for i in range(epochs):
         optimizer.zero_grad()
         TtT = torch.mm(transform.t(), transform)
         norm1 = (t1.mm(TtT - torch.eye(dim)).mm(t2)).norm(p="fro")
         norm2 = (neutrals.t().mm(TtT).mm(gender_direction)).norm(p="fro")
-        loss = norm1 + l * norm2
+        loss = norm1 + L * norm2
         if loss.item() < best[1]:
             best = (transform, loss.item())
 
@@ -116,6 +119,6 @@ def soft_debias(E, gender_specific_words, defs, lamb=0.2,
         print(f"Lowest loss: {best[1]}")
 
     debiased_embeds = transform.mm(W).t().numpy()
-    debiased_embeds = debiased_embeds / np.linalg.norm(debiased_embeds,
-        axis=1)[:, None]
+    debiased_embeds = debiased_embeds / np.linalg.norm(
+        debiased_embeds, axis=1)[:, None]
     E.vecs = debiased_embeds
