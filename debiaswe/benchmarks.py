@@ -41,6 +41,7 @@ PKG_DIR = os.path.dirname(os.path.abspath(__file__))
 class Benchmark:
     def __init__(self):
         self.DATA_ROOT = os.path.join(PKG_DIR, "benchmark_data")
+        self.v_gender = None
         self.files = [
             file_name.replace(".txt", "") for file_name in os.listdir(
                 self.DATA_ROOT) if ".txt" in file_name]
@@ -190,8 +191,13 @@ class Benchmark:
         # Batch the queries up
         y = []
         n_batches = len(analogy_answers) // batch_size
+<<<<<<< HEAD
         for i, batch in enumerate(tqdm(np.array_split(
                 filtered_questions, n_batches))):
+=======
+        for i, batch in enumerate(tqdm(np.array_split(filtered_questions,
+            n_batches))):
+>>>>>>> 4d28a0eafb46dca7451550dd398583b5f7ccb2ba
             # print("Processing batch", i+1, "of", n_batches)
             # Extract relevant embeddings from E
             a = E.vecs[np.vectorize(E.index.__getitem__)(batch[:, 0])]
@@ -237,7 +243,14 @@ class Benchmark:
         male_defs = np.array(unzipped_defs[1])
         A = E.vecs[np.vectorize(E.index.__getitem__)(female_defs)]
         B = E.vecs[np.vectorize(E.index.__getitem__)(male_defs)]
-        v_gender = doPCA(defs, E).components_[0]
+        # Determine gender direction if nescessary
+        v_gender = None
+        if self.v_gender is None:
+            v_gender = doPCA(defs, E).components_[0]
+            self.v_gender = v_gender
+        else:
+            v_gender = self.v_gender
+
 
         # Extract professions and split according to projection on the gender
         # direction.
