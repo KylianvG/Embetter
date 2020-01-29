@@ -32,11 +32,9 @@ import json
 import numpy as np
 from collections import defaultdict
 from scipy import linalg, mat, dot, stats
-from progress.bar import Bar
-
 from .data import load_professions, load_definitional_pairs
 from .we import doPCA
-from .logprogress import log_progress
+from tqdm import tqdm
 PKG_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -192,11 +190,8 @@ class Benchmark:
         # Batch the queries up
         y = []
         n_batches = len(analogy_answers) // batch_size
-        bar = Bar('Processing', max=len(np.array_split(
-            filtered_questions, n_batches)))
-        for i, batch in enumerate(log_progress(np.array_split(
-                filtered_questions, n_batches),
-                name="Processing all batches...")):
+        for i, batch in enumerate(tqdm(np.array_split(filtered_questions, 
+            n_batches))):
             # print("Processing batch", i+1, "of", n_batches)
             # Extract relevant embeddings from E
             a = E.vecs[np.vectorize(E.index.__getitem__)(batch[:, 0])]
@@ -217,8 +212,6 @@ class Benchmark:
 
             # Retrieve words with best analogy scores
             y.append(np.array(E.words)[np.argmax(batch_scores, axis=0)])
-            bar.next()
-        bar.finish()
 
         # Calculate returnable metrics
         y = np.hstack(y)[:, None]
