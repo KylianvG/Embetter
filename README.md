@@ -45,9 +45,9 @@ This project is licensed under the MIT License - see the LICENSE.md file for det
 
 This code is extended from the code from:
 
-<Man is to Computer Programmer as Woman is to Homemaker? Debiasing Word Embeddings \
-Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai \
-2016>
+> Man is to Computer Programmer as Woman is to Homemaker? Debiasing Word Embeddings \
+> Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai \
+> 2016
 
 Which is available at: \
 https://github.com/tolga-b/debiaswe
