@@ -33,11 +33,7 @@ in your terminal to get a list of options on which experiments to run.
 Kylian van Geijtenbeek -11226145 - kylian.vangeijtenbeek@gmail.com \
 Thom Visser - 11281405 - thom.1@kpnmail.nl \
 Martine Toering - 11302925 - martine.toering@student.uva.nl \
-<<<<<<< HEAD
 Iulia Ionescu - 10431357 - iulia.ionescu@student.uva.nl
-=======
-Iulia Ionescu - 10431357 - iulia.ionescu@student.uva.nl \
->>>>>>> 3f7cb3ade2994dfad2ef00c92ed4bccc6623727e
 
 Morris Frank - TA
 
