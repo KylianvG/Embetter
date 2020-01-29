@@ -11,10 +11,14 @@ Here we'll outline how to access the code.
 
 ### Prerequisites
 
-To run the code, create an Anaconda environment using:\
-`conda env create -f environment.yml`\
+To run the code, create an Anaconda environment using:
+```
+conda env create -f environment.yml
+```
 or create an empty environment, install pip in this environment and run:\
-`pip install -r requirements.txt`.
+```
+pip install -r requirements.txt
+```
 
 This will install all dependencies for this package.
 
@@ -26,8 +30,10 @@ To use the code from this package, simply download or clone the repository.
 
 A general tutorial on the usage of this package, together with some of the experiments are available in the Jupyter notebook in the repository.\
 For a full replication of all the available experiments, you can execute the `experiments.py` script.\
-Use\
-`python experiments.py -h`\
+Use
+```
+python experiments.py -h
+```
 in your terminal to get a list of options on which experiments to run.
 
 ## Authors
