@@ -14,20 +14,23 @@ if sys.version_info[0] < 3:
 Example script for comparing occupational bias across word embeddings.
 Following approach from:
 
-Man is to Computer Programmer as Woman is to Homemaker? Debiasing Word Embeddings
+Man is to Computer Programmer as Woman is to Homemaker?
+    Debiasing Word Embeddings
 Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai
 2016
 """
 
-def plot_comparison_embeddings(datapoints_a, datapoints_b, embedding_names, 
-        save=False, name="compare_bias"):
+
+def plot_comparison_embeddings(
+        datapoints_a, datapoints_b, embedding_names, save=False,
+        name="compare_bias"):
     """
     Plot the occupational bias comparison across two embeddings.
 
 
     :param list datapoints_a: datapoints of first embedding
     :param list datapoints_b: datapoints of second embedding
-    :param list embedding_names: List with strings of names of 
+    :param list embedding_names: List with strings of names of
         embeddings. For example, ["word2vec", "GloVe"].
     :param boolean save: whether to save plot
     :param string name: string with name of file save
@@ -39,7 +42,8 @@ def plot_comparison_embeddings(datapoints_a, datapoints_b, embedding_names,
     ax.set_xlim(min(datapoints_b)-0.1, max(datapoints_b)+0.1)
     plt.xlabel("Gender axis {}".format(embedding_names[1]), fontsize=12)
     plt.ylabel("Gender axis {}".format(embedding_names[0]), fontsize=12)
-    plt.title("Occupational gender bias across embeddings", pad=18, fontsize=13)
+    plt.title(
+        "Occupational gender bias across embeddings", pad=18, fontsize=13)
     if save:
         fig.savefig("{}.png".format(name))
     plt.show()
@@ -53,17 +57,17 @@ def get_datapoints_embedding(E, v_gender, professions, unique_occupations):
     :param object E: WordEmbedding object.
     :param list projection: List with projection of profession words
         onto gender axis of embedding.
-    :param list unique_occupations: List of occupations present in all 
+    :param list unique_occupations: List of occupations present in all
         embeddings to compare.
     :returns: datapoints list
     """
     # Extract datapoint per occupation and sort datapoints
-    sp = sorted([(E.v(w).dot(v_gender), w) for w in professions 
-        if w in unique_occupations])
+    sp = sorted([(E.v(w).dot(
+        v_gender), w) for w in professions if w in unique_occupations])
     points = [s[0] for s in sp]
     words = [s[1] for s in sp]
     words_sorted_ind = sorted(range(len(words)), key=lambda k: words[k])
-    datapoints =  [points[i] for i in words_sorted_ind]
+    datapoints = [points[i] for i in words_sorted_ind]
     return datapoints
 
 
@@ -73,7 +77,7 @@ def project_profession_words(E, professions):
 
     :param object E: WordEmbedding object.
     :param list professions: List of professions
-    :param list unique_words: List of words present in all 
+    :param list unique_words: List of words present in all
         embeddings to compare.
     :returns: projection, profession words, gender axis
     """
@@ -89,14 +93,14 @@ def project_profession_words(E, professions):
     return sp, occupations, v_gender
 
 
-def compare_occupational_bias(E_a, E_b, embedding_names, save=False, 
-        name="compare_bias"):
+def compare_occupational_bias(
+        E_a, E_b, embedding_names, save=False, name="compare_bias"):
     """
     Compare occupational bias across word embeddings.
 
     :param object E_a: WordEmbedding object.
     :param object E_b: WordEmbedding object.
-    :param list embedding_names: List with strings of names of 
+    :param list embedding_names: List with strings of names of
         embeddings. For example, ["word2vec", "GloVe"].
     :param boolean save: whether to save plot
     :param string name: string with name of file save
@@ -106,26 +110,30 @@ def compare_occupational_bias(E_a, E_b, embedding_names, save=False,
     proj_a, prof_a, v_gender_a = project_profession_words(E_a, professions)
     proj_b, prof_b, v_gender_b = project_profession_words(E_b, professions)
     unique_occupations = list(set(prof_a).intersection(prof_b))
-    datapoints_a = get_datapoints_embedding(E_a, v_gender_a, professions, 
-        unique_occupations)
-    datapoints_b = get_datapoints_embedding(E_b, v_gender_b, professions, 
-        unique_occupations)
-    plot_comparison_embeddings(datapoints_a, datapoints_b, embedding_names, 
-        name)
-
+    datapoints_a = get_datapoints_embedding(
+        E_a, v_gender_a, professions, unique_occupations)
+    datapoints_b = get_datapoints_embedding(
+        E_b, v_gender_b, professions, unique_occupations)
+    plot_comparison_embeddings(
+        datapoints_a, datapoints_b, embedding_names, name)
 
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("embedding_filename_a", help="The name of the embedding")
-    parser.add_argument("embedding_filename_b", 
+    parser.add_argument(
+        "embedding_filename_a", help="The name of the embedding")
+    parser.add_argument(
+        "embedding_filename_b",
         help="The name of the embedding to compare with")
-    parser.add_argument("embedding_names", type=list,
+    parser.add_argument(
+        "embedding_names", type=list,
         help="List of two strings with embedding names")
-    parser.add_argument("--save", type=bool, default=False,
+    parser.add_argument(
+        "--save", type=bool, default=False,
         help="If true plot is saved")
-    parser.add_argument("--name", type=str, default="compare_bias", 
+    parser.add_argument(
+        "--name", type=str, default="compare_bias",
         help="Name of plot save")
 
     if len(sys.argv[2] != 2):
@@ -134,5 +142,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print(args)
 
-    compare_occupational_bias(embedding_filename_a, embedding_filename_b, 
-        embedding_names, name)
+    compare_occupational_bias(
+        embedding_filename_a, embedding_filename_b, embedding_names, name)

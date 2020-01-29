@@ -35,6 +35,7 @@ from scipy import linalg, mat, dot, stats
 from .data import load_professions, load_definitional_pairs
 from .we import doPCA
 from tqdm import tqdm
+import time
 PKG_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -156,6 +157,7 @@ class Benchmark:
         result["WEAT"] = ["-", "-", weat_res]
         if print:
             self.pprint(result, title)
+            time.sleep(3)
 
         return result
 
@@ -191,9 +193,8 @@ class Benchmark:
         # Batch the queries up
         y = []
         n_batches = len(analogy_answers) // batch_size
-        for i, batch in enumerate(tqdm(np.array_split(filtered_questions,
-            n_batches))):
-            # print("Processing batch", i+1, "of", n_batches)
+        for i, batch in enumerate(tqdm(np.array_split(
+                filtered_questions, n_batches))):
             # Extract relevant embeddings from E
             a = E.vecs[np.vectorize(E.index.__getitem__)(batch[:, 0])]
             x = E.vecs[np.vectorize(E.index.__getitem__)(batch[:, 1])]

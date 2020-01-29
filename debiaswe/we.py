@@ -393,9 +393,9 @@ class WordEmbedding:
             print("-"*77)
         for i in range(min(print_firstn, len(sp))):
             print(str(sp[-(i+1)][0].round(3)).ljust(8)      # score neg
-                    + sp[-(i+1)][1].rjust(29) + " | "       # profession neg
-                    + sp[i][1].ljust(29)                    # score pos
-                    + str(sp[i][0].round(3)).rjust(8))  # profession pos
+                  + sp[-(i+1)][1].rjust(29) + " | "       # profession neg
+                  + sp[i][1].ljust(29)                    # score pos
+                  + str(sp[i][0].round(3)).rjust(8))  # profession pos
         return sp
 
 
