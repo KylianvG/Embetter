@@ -1,13 +1,13 @@
 # FactAI Word Embedding Debiassing
 
-Using pre-trained word embeddings like w2v, GloVe or fastText? This code allows you to easily remove any societal bias.
+Are you using pre-trained word embeddings like word2vec, GloVe or fastText? This code allows you to easily remove gender bias.
 No longer can nurses only be female or are males the only cowards.
 
-This repository is used for the FACT-AI course, where we replicate the experiments of a paper from the FACT field.
+This repository was made during the FACT-AI course at the University of Amsterdam, during which papers from the FACT field are reproduced and possibly extended.
 
 ## Getting Started
 
-Here we'll outline how to access the code.
+Here we will outline how to access the code.
 
 ### Prerequisites
 
