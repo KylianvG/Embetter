@@ -1,3 +1,13 @@
+"""
+Example script for comparing occupational bias across word embeddings.
+Following approach from:
+
+Man is to Computer Programmer as Woman is to Homemaker?
+    Debiasing Word Embeddings
+Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai
+2016
+"""
+
 from __future__ import print_function, division
 import debiaswe.we as we
 import json
@@ -10,15 +20,6 @@ from debiaswe.we import doPCA
 if sys.version_info[0] < 3:
     import io
     open = io.open
-"""
-Example script for comparing occupational bias across word embeddings.
-Following approach from:
-
-Man is to Computer Programmer as Woman is to Homemaker?
-    Debiasing Word Embeddings
-Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai
-2016
-"""
 
 
 def plot_comparison_embeddings(
