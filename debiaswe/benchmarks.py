@@ -190,8 +190,8 @@ class Benchmark:
         # Batch the queries up
         y = []
         n_batches = len(analogy_answers) // batch_size
-        for i, batch in enumerate(tqdm(np.array_split(filtered_questions, 
-            n_batches))):
+        for i, batch in enumerate(tqdm(np.array_split(
+                filtered_questions, n_batches))):
             # print("Processing batch", i+1, "of", n_batches)
             # Extract relevant embeddings from E
             a = E.vecs[np.vectorize(E.index.__getitem__)(batch[:, 0])]
