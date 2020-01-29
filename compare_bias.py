@@ -15,8 +15,8 @@ import numpy as np
 import argparse
 import sys
 from matplotlib import pyplot as plt
-from debiaswe.data import load_professions, load_definitional_pairs
-from debiaswe.we import doPCA
+from embetter.data import load_professions, load_definitional_pairs
+from embetter.we import doPCA
 if sys.version_info[0] < 3:
     import io
     open = io.open
