@@ -116,6 +116,8 @@ class WordEmbedding:
                 print("Normalizing vectors...")
             self.normalize()
         print("Embedding shape:", self._vecs.shape)
+        print(self.n, "words of dimension", self.d, ":", ", ".join(
+            self._words[:4] + ["..."] + self._words[-4:]))
 
     def get_dict(self):
         """
@@ -201,8 +203,6 @@ class WordEmbedding:
         self.n, self.d = self._vecs.shape
         assert self.n == len(self._words) == len(self._index)
         self._neighbors = None
-        print(self.n, "words of dimension", self.d, ":", ", ".join(
-            self._words[:4] + ["..."] + self._words[-4:]))
 
     def v(self, word):
         """
@@ -311,7 +311,7 @@ class WordEmbedding:
         if (self._neighbors is not None and self.thresh == thresh
                 and self.max_words == max_words):
             return
-        print("Computing neighbors")
+        print("Computing neighbors...")
         self.thresh = thresh
         self.max_words = max_words
         vecs = self._vecs[:max_words]
@@ -320,13 +320,12 @@ class WordEmbedding:
         from collections import Counter
         rows, cols = dots.nonzero()
         nums = list(Counter(rows).values())
-        print("Mean:", np.mean(nums)-1)
-        print("Median:", np.median(nums)-1)
+        print("Mean number of neighbors per word:", np.mean(nums)-1)
+        print("Median of number of neighbors per word:", np.median(nums)-1)
         rows, cols, vecs = zip(*[(i, j, vecs[i]-vecs[j]) for i, j, x in zip(
             rows, cols, dots.data) if i < j])
         self._neighbors = rows, cols, np.array(
             [v/np.linalg.norm(v) for v in vecs])
-        print(self._neighbors[2].shape)
 
     def best_analogies_dist_thresh(
             self, v, thresh=1, topn=500, max_words=50000):
@@ -381,6 +380,7 @@ class WordEmbedding:
         :param integer print_firstn: Number of professions to print.
         :returns: Sorted list of projected professions
         """
+        assert isinstance(print_firstn, int) and print_firstn >= 0
         # Calculate the projection values onto the bias subspace
         sp = sorted([(self.v(w).dot(
             bias_space), w) for w in profession_words if w in self._words])
@@ -388,8 +388,9 @@ class WordEmbedding:
         pos_neg = ("Female", "Male") if self.v("she").dot(bias_space) > 0 \
             else ("Male", "Female")
         # Print the professions with scores
-        print(pos_neg[0].center(38) + "|" + pos_neg[1].center(38))
-        print("-"*77)
+        if print_firstn > 0:
+            print(pos_neg[0].center(38) + "|" + pos_neg[1].center(38))
+            print("-"*77)
         for i in range(min(print_firstn, len(sp))):
             print(str(sp[-(i+1)][0].round(3)).ljust(8)      # score neg
                   + sp[-(i+1)][1].rjust(29) + " | "       # profession neg
@@ -406,6 +407,8 @@ def viz(analogies):
     :param list analogies: List of analogies to print.
     :returns: None
     """
+    print("Index".ljust(12) + "Analogy".center(45) + "Gender score".rjust(12))
+    print("-"*69)
     print("\n".join(str(i).rjust(4)+a[0].rjust(29) + " | " + a[1].ljust(29)
                     + (str(a[2]))[:4] for i, a in enumerate(analogies)))
 
