@@ -57,7 +57,7 @@ ID = {
     },
 
     # fastText
-    # 768d embeddings
+    # 768d embeddings, 1M words
     "fasttext_large": {
         "id": "1G23SP2D7qKISGNKH5HK6v9Su3wo-jOxH",
         "extension": ".vec"
