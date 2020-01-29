@@ -9,11 +9,11 @@ GloVe and fastText embeddings.
 """
 
 import argparse
-import debiaswe.we as we
-from debiaswe.we import WordEmbedding
-from debiaswe.data import load_data
-from debiaswe.debias import hard_debias, soft_debias
-from debiaswe.benchmarks import Benchmark
+import embetter.we as we
+from embetter.we import WordEmbedding
+from embetter.data import load_data
+from embetter.debias import hard_debias, soft_debias
+from embetter.benchmarks import Benchmark
 from copy import deepcopy
 
 # Parameters for doing soft debiasing from scratch
