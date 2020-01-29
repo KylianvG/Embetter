@@ -1,15 +1,3 @@
-from __future__ import print_function, division
-import debiaswe.we as we
-import json
-import numpy as np
-import argparse
-import sys
-from matplotlib import pyplot as plt
-from debiaswe.data import load_professions, load_definitional_pairs
-from debiaswe.we import doPCA
-if sys.version_info[0] < 3:
-    import io
-    open = io.open
 """
 Example script for comparing occupational bias across word embeddings.
 Following approach from:
@@ -19,6 +7,19 @@ Man is to Computer Programmer as Woman is to Homemaker?
 Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai
 2016
 """
+
+from __future__ import print_function, division
+import embetter.we as we
+import json
+import numpy as np
+import argparse
+import sys
+from matplotlib import pyplot as plt
+from embetter.data import load_professions, load_definitional_pairs
+from embetter.we import doPCA
+if sys.version_info[0] < 3:
+    import io
+    open = io.open
 
 
 def plot_comparison_embeddings(
