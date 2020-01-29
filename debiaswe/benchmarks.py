@@ -35,6 +35,7 @@ from scipy import linalg, mat, dot, stats
 from .data import load_professions, load_definitional_pairs
 from .we import doPCA
 from tqdm import tqdm
+import time
 PKG_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -156,6 +157,7 @@ class Benchmark:
         result["WEAT"] = ["-", "-", weat_res]
         if print:
             self.pprint(result, title)
+            time.sleep(3)
 
         return result
 
