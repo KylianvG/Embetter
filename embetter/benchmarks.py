@@ -248,7 +248,6 @@ class Benchmark:
         else:
             v_gender = self.v_gender
 
-
         # Extract professions and split according to projection on the gender
         # direction.
         professions = load_professions(embed_words=E.words)
