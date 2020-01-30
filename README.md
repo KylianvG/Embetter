@@ -27,7 +27,7 @@ This will install all dependencies for this package.
 To use the code from this package, simply download or clone the repository.
 
 ## Available pre-trained embeddings
-Several pre-trained embeddings are provided and are automatically downloaded upon creating a `WordEmbedding` object with the name of one of the available embeddings. The embeddings are based on <a href="https://code.google.com/archive/p/word2vec/">word2vec</a>, <a href="https://nlp.stanford.edu/projects/glove/">GloVe</a>, and <a href="https://fasttext.cc/">fastText</a>.
+Several pre-trained embeddings are provided and are automatically downloaded upon creating a `WordEmbedding` object with the name of one of the available embeddings. The embeddings are based on <a href="https://code.google.com/archive/p/word2vec/">Word2vec</a>, <a href="https://nlp.stanford.edu/projects/glove/">GloVe</a>, and <a href="https://fasttext.cc/">fastText</a>.
 
 The available embeddings are listed below.
 
@@ -41,7 +41,7 @@ The available embeddings are listed below.
 | `glove_small`     | 300 | 42982 |
 | `glove_small_hard_debiased`     | 300 | 42982 |
 | `glove_small_soft_debiased`     | 300 | 42982 |
-| `fasttext_large`     | 300 | 1M |
+| `fasttext_large`     | 300 | 999994 |
 | `fasttext_small`     | 300 | 27014 |
 | `fasttext_small_hard_debiased`     | 300 | 27014 |
 | `fasttext_small_soft_debiased`     | 300 | 27014 |
@@ -49,7 +49,9 @@ The available embeddings are listed below.
 Note that because of the large computational workload, hard debiasing of large embeddings (entire vocabulary) is very difficult and soft debiasing with the current setup is impossible, and are therefore not available for download.
 
 ### Embedding from file
-Besides the available embeddings, it is also possible to load embeddings from a file on your device. Each line in the file must start with a word from the vocabulary, followed by the vector values, separated by spaces. Binary (.bin) files are also supported.
+Besides the available embeddings, it is also possible to load embeddings from a file on your device. If the embedding is very large and loading the embedding takes unreasonably long, make sure the filename ends with "large" (possibly preceding a file extension). E.g. `./myfolder/myembedding_large.txt`. This makes sure that the embedding is loaded using the `gensim` package, which scales better with large embeddings. However, if you do this, the first line of the file **must** contain the number of words in the embedding, followed by a space, followed by the embedding dimensionality, e.g. for `glove_large` this is `1900000 300`.
+
+Besides this first line for large embeddings, each line in the file must start with a word from the vocabulary, followed by the vector values, separated by whitespace characters. Binary (.bin) files are also supported for the available word2vec binary embedding files, but support is not guaranteed for manually created binary files and should not be heavily relied upon.
 
 #### Example
 ```
