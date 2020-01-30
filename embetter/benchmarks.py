@@ -112,13 +112,14 @@ class Benchmark:
         """
         assert len(results) == len(methods)
         from prettytable import PrettyTable
-        table = PrettyTable(["Score", "RG-65", "WS-35", "MSR", "WEAT"])
+        table = PrettyTable(["Score", "RG-65", "WS-353", "MSR", "WEAT"])
         table.title = 'Results for {}'.format(title)
         for result, method in zip(results, methods):
             table.add_row(
-                [method, list(result.values())[1][2],
-                    list(result.values())[0][2], list(result.values())[2][2],
-                    list(result.values())[3][2]])
+                [method, list(result['EN-RG-65'])[2],
+                    list(result['EN-WS-353-ALL'])[2],
+                    list(result['MSR-analogy'])[2],
+                    list(result['WEAT'])[2]])
         print(table)
 
     def evaluate(
@@ -246,7 +247,6 @@ class Benchmark:
             self.v_gender = v_gender
         else:
             v_gender = self.v_gender
-
 
         # Extract professions and split according to projection on the gender
         # direction.
