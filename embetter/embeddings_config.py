@@ -57,7 +57,7 @@ ID = {
     },
 
     # fastText, trained Wikipedia 2017, UMBC webbase corpus and statmt.org news
-    # 300d embeddings, 1M words
+    # 300d embeddings, 999994 words
     "fasttext_large": {
         "id": "1G23SP2D7qKISGNKH5HK6v9Su3wo-jOxH",
         "extension": ".vec"

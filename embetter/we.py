@@ -73,16 +73,17 @@ class WordEmbedding:
             fname = embedding
             print(f"Creating embedding from: {os.path.abspath(embedding)}")
 
-        # Load binary files using gensim
-        if fname.endswith(".bin"):
+        # Load large embeddings using gensim
+        if embedding.endswith("large") or (len(embedding.split(".")) > 1 \
+                and embedding.split(".")[-2].endswith("large")):
             import gensim.models
             model = gensim.models.KeyedVectors.load_word2vec_format(
-                fname, binary=True, limit=limit)
+                fname, binary=fname.endswith(".bin"), limit=limit)
             self._words = sorted(
                 [w for w in model.vocab], key=lambda w: model.vocab[w].index)
             self._vecs = np.array(
                 [model[w] for w in self._words], dtype='float32')
-        # Load non binary files by reading line by line
+        # Load small files by reading line by line
         else:
             vecs = []
             words = []
