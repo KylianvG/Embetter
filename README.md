@@ -41,7 +41,7 @@ The available embeddings are listed below.
 | `glove_small`     | 300 | 42982 |
 | `glove_small_hard_debiased`     | 300 | 42982 |
 | `glove_small_soft_debiased`     | 300 | 42982 |
-| `fasttext_large`     | 300 | 1M |
+| `fasttext_large`     | 300 | 999994 |
 | `fasttext_small`     | 300 | 27014 |
 | `fasttext_small_hard_debiased`     | 300 | 27014 |
 | `fasttext_small_soft_debiased`     | 300 | 27014 |
