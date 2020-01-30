@@ -74,8 +74,9 @@ class WordEmbedding:
             print(f"Creating embedding from: {os.path.abspath(embedding)}")
 
         # Load large embeddings using gensim
-        if embedding.endswith("large") or (len(embedding.split(".")) > 1 \
-                and embedding.split(".")[-2].endswith("large")):
+        if embedding.endswith("large") or (
+                len(embedding.split(".")) > 1 and embedding.split(
+                ".")[-2].endswith("large")):
             import gensim.models
             model = gensim.models.KeyedVectors.load_word2vec_format(
                 fname, binary=fname.endswith(".bin"), limit=limit)
