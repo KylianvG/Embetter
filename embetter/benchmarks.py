@@ -116,9 +116,10 @@ class Benchmark:
         table.title = 'Results for {}'.format(title)
         for result, method in zip(results, methods):
             table.add_row(
-                [method, list(result.values())[0][2],
-                    list(result.values())[1][2], list(result.values())[2][2],
-                    list(result.values())[3][2]])
+                [method, list(result['EN-RG-65'])[2],
+                    list(result['EN-WS-353-ALL'])[2],
+                    list(result['MSR-analogy'])[2],
+                    list(result['WEAT'])[2]])
         print(table)
 
     def evaluate(
