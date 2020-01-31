@@ -27,7 +27,7 @@ This will install all dependencies for this package.
 To use the code from this package, simply download or clone the repository.
 
 ## Available pre-trained embeddings
-Several pre-trained embeddings are provided and are automatically downloaded upon creating a `WordEmbedding` object with the name of one of the available embeddings. The embeddings are based on <a href="https://code.google.com/archive/p/word2vec/">word2vec</a>, <a href="https://nlp.stanford.edu/projects/glove/">GloVe</a>, and <a href="https://fasttext.cc/">fastText</a>.
+Several pre-trained embeddings are provided and are automatically downloaded upon creating a `WordEmbedding` object with the name of one of the available embeddings. The embeddings are based on <a href="https://code.google.com/archive/p/word2vec/">Word2vec</a>, <a href="https://nlp.stanford.edu/projects/glove/">GloVe</a>, and <a href="https://fasttext.cc/">fastText</a>.
 
 The available embeddings are listed below.
 

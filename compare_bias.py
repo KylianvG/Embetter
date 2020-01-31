@@ -44,7 +44,7 @@ def plot_comparison_embeddings(
     plt.xlabel("Gender axis {}".format(embedding_names[1]), fontsize=12)
     plt.ylabel("Gender axis {}".format(embedding_names[0]), fontsize=12)
     plt.title(
-        "Occupational gender bias across embeddings", pad=18, fontsize=13)
+        "Gender bias in professions across embeddings", pad=18, fontsize=13)
     if save:
         fig.savefig("{}.png".format(name))
     plt.show()
