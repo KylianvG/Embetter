@@ -72,6 +72,11 @@ python experiments.py -h
 ```
 in your terminal to get a list of options on which experiments to run.
 
+NOTE: Creating analogies is a very costly procedure which requires comparisons between a lot of different words. For larger word embeddings, this quickly results in memory issues. Even for `glove_small`, which contains 42982 words, creating analogies may prove problematic. To run the benchmarks without generating analogies, use the `--no_show` flag to avoid creating analogies and profession analysis:
+```
+python experiments.py --no_show
+```
+
 ## Authors
 
 Kylian van Geijtenbeek -11226145 - kylian.vangeijtenbeek@gmail.com \
