@@ -79,10 +79,10 @@ python experiments.py --no_show
 
 ## Authors
 
-Kylian van Geijtenbeek -11226145 - kylian.vangeijtenbeek@gmail.com \
-Thom Visser - 11281405 - thom.1@kpnmail.nl \
-Martine Toering - 11302925 - martine.toering@student.uva.nl \
-Iulia Ionescu - 10431357 - iulia.ionescu@student.uva.nl
+Kylian van Geijtenbeek\
+Thom Visser\
+Martine Toering\
+Iulia Ionescu
 
 Morris Frank - TA
 
